@@ -1,6 +1,6 @@
 # Integrate Sovendus Checkout Benefits and Voucher Network into Flutter App
 
-## Add a inline WebView on your success page
+## Use the Sovendus Flutter Component on the order success page 
 1. Download the Sovendus Banner component from [here](https://raw.githubusercontent.com/Sovendus-GmbH/Sovendus-Voucher-Network-and-Checkout-Benefits-Documentation-for-Flutter-Apps/main/sovendus_banner.dart) and add it to your flutter application.
 2. Use the component on the order success page, where you want to display the Sovendus banner. 
     - Make sure to replace the arguments with the actual data from the purchase. 
