@@ -35,7 +35,7 @@ SovendusBanner(
         country: "DE",
     ),
     // Until the banner is loaded we're showing a loading indicator, 
-    // optionally you can pass a custom loadinspinner with the type Widget  
+    // optionally you can pass a custom loading spinner with the type Widget  
     customProgressIndicator: RefreshProgressIndicator(),
 )
 ```
