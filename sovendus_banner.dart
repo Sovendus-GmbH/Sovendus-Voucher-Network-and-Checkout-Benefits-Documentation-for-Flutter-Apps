@@ -1,10 +1,41 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+class SovendusCustomerData {
+  String? salutation;
+  String? firstName;
+  String? lastName;
+  String? email;
+  String? phone;
+  int? yearOfBirth;
+  String? street;
+  String? streetNumber;
+  String? zipcode;
+  String? city;
+  String? country;
+
+  SovendusCustomerData({
+    this.salutation,
+    this.firstName,
+    this.lastName,
+    this.email,
+    this.phone,
+    this.yearOfBirth,
+    this.street,
+    this.streetNumber,
+    this.zipcode,
+    this.city,
+    this.country,
+  });
+}
+
 class SovendusBanner extends StatefulWidget {
-  // Version 1.0.0
   late final WebViewController _controller;
+  late final double initialWebViewHeight;
+
+  final Widget? customProgressIndicator;
 
   SovendusBanner({
     key,
@@ -17,18 +48,10 @@ class SovendusBanner extends StatefulWidget {
     required double netOrderValue,
     required String currencyCode,
     required String usedCouponCode,
-    String? customerSalutation,
-    String? customerFirstName,
-    String? customerLastName,
-    String? customerEmail,
-    String? customerPhone,
-    int? customerYearOfBirth,
-    String? customerStreet,
-    String? customerStreetNumber,
-    String? customerZipcode,
-    String? customerCity,
-    String? customerCountry,
+    SovendusCustomerData? customerData,
+    this.customProgressIndicator,
   }) {
+    // String customerCountry = customerData?.customerCountry ?? "";
     String sovendusHtml = '''
         <!DOCTYPE html>
         <html>
@@ -65,24 +88,31 @@ class SovendusBanner extends StatefulWidget {
                       });
                     }
                     window.sovConsumer = {
-                        consumerSalutation: "$customerSalutation",
-                        consumerFirstName: "$customerFirstName",
-                        consumerLastName: "$customerLastName",
-                        consumerEmail: "$customerEmail",
-                        consumerPhone : "$customerPhone",   
-                        consumerYearOfBirth  : "$customerYearOfBirth",   
-                        consumerStreet: "$customerStreet",
-                        consumerStreetNumber: "$customerStreetNumber",
-                        consumerZipcode: "$customerZipcode",
-                        consumerCity: "$customerCity",
-                        consumerCountry: "$customerCountry",
+                        consumerSalutation: "${customerData?.salutation ?? ""}",
+                        consumerFirstName: "${customerData?.firstName ?? ""}",
+                        consumerLastName: "${customerData?.lastName ?? ""}",
+                        consumerEmail: "${customerData?.email ?? ""}",
+                        consumerPhone : "${customerData?.phone ?? ""}",   
+                        consumerYearOfBirth  : "${customerData?.yearOfBirth ?? ""}",   
+                        consumerStreet: "${customerData?.street ?? ""}",
+                        consumerStreetNumber: "${customerData?.streetNumber ?? ""}",
+                        consumerZipcode: "${customerData?.zipcode ?? ""}",
+                        consumerCity: "${customerData?.city ?? ""}",
+                        consumerCountry: "${customerData?.country ?? ""}",
                     };
                 </script>
                 <script type="text/javascript" src="https://api.sovendus.com/sovabo/common/js/flexibleIframe.js" async=true></script>
             </body>
         </html>
     ''';
-
+    double _initialWebViewHeight = 0;
+    if (trafficMediumNumberVoucherNetwork is int) {
+      _initialWebViewHeight += 348;
+    }
+    if (trafficMediumNumberCheckoutBenefits is int) {
+      _initialWebViewHeight += 500;
+    }
+    initialWebViewHeight = _initialWebViewHeight;
     final WebViewController controller = WebViewController();
     controller.loadHtmlString(sovendusHtml);
     controller.setJavaScriptMode(JavaScriptMode.unrestricted);
@@ -105,7 +135,8 @@ class SovendusBanner extends StatefulWidget {
 }
 
 class _SovendusBanner extends State<SovendusBanner> {
-  double webViewHeight = 1;
+  double webViewHeight = 0;
+  bool loadingDone = false;
 
   @override
   Widget build(BuildContext context) {
@@ -114,20 +145,31 @@ class _SovendusBanner extends State<SovendusBanner> {
         updateHeight(message.message);
       },
     );
+    double _webViewHeight = webViewHeight;
+    if (webViewHeight < 20) {
+      _webViewHeight = widget.initialWebViewHeight;
+    }
     return SizedBox(
-      height: webViewHeight,
-      child: WebViewWidget(
-        controller: widget._controller,
-      ),
+      height: _webViewHeight,
+      child: loadingDone
+          ? WebViewWidget(
+              controller: widget._controller,
+            )
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                  widget.customProgressIndicator ?? CircularProgressIndicator()
+                ]),
     );
   }
 
   void updateHeight(String windowHeight) async {
     if (windowHeight.startsWith("height")) {
       double height = double.parse(windowHeight.replaceAll("height", ""));
-      if (webViewHeight != height) {
+      if (webViewHeight != height && height > 20) {
         setState(() {
           webViewHeight = height;
+          loadingDone = true;
         });
       }
     }
