@@ -1,5 +1,7 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -32,7 +34,7 @@ class SovendusCustomerData {
 }
 
 class SovendusBanner extends StatefulWidget {
-  late final WebViewController _controller;
+  late final WebViewController? _controller;
   late final double initialWebViewHeight;
 
   final Widget? customProgressIndicator;
@@ -51,8 +53,8 @@ class SovendusBanner extends StatefulWidget {
     SovendusCustomerData? customerData,
     this.customProgressIndicator,
   }) {
-    // String customerCountry = customerData?.customerCountry ?? "";
-    String sovendusHtml = '''
+    if (isMobile()) {
+      String sovendusHtml = '''
         <!DOCTYPE html>
         <html>
             <head>
@@ -105,33 +107,42 @@ class SovendusBanner extends StatefulWidget {
             </body>
         </html>
     ''';
-    double _initialWebViewHeight = 0;
-    if (trafficMediumNumberVoucherNetwork is int) {
-      _initialWebViewHeight += 348;
+      double _initialWebViewHeight = 0;
+      if (trafficMediumNumberVoucherNetwork is int) {
+        _initialWebViewHeight += 348;
+      }
+      if (trafficMediumNumberCheckoutBenefits is int) {
+        _initialWebViewHeight += 500;
+      }
+      initialWebViewHeight = _initialWebViewHeight;
+      final WebViewController controller = WebViewController();
+      controller.loadHtmlString(sovendusHtml);
+      controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+      controller.enableZoom(false);
+      controller.setNavigationDelegate(
+        NavigationDelegate(
+          onNavigationRequest: (NavigationRequest request) {
+            launchUrl(
+              Uri.parse(request.url),
+            );
+            return NavigationDecision.prevent;
+          },
+        ),
+      );
+      _controller = controller;
     }
-    if (trafficMediumNumberCheckoutBenefits is int) {
-      _initialWebViewHeight += 500;
-    }
-    initialWebViewHeight = _initialWebViewHeight;
-    final WebViewController controller = WebViewController();
-    controller.loadHtmlString(sovendusHtml);
-    controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-    controller.enableZoom(false);
-    controller.setNavigationDelegate(
-      NavigationDelegate(
-        onNavigationRequest: (NavigationRequest request) {
-          launchUrl(
-            Uri.parse(request.url),
-          );
-          return NavigationDecision.prevent;
-        },
-      ),
-    );
-    _controller = controller;
   }
 
   @override
   State<SovendusBanner> createState() => _SovendusBanner();
+
+  static bool isMobile() {
+    if (kIsWeb) {
+      return false;
+    } else {
+      return Platform.isIOS || Platform.isAndroid;
+    }
+  }
 }
 
 class _SovendusBanner extends State<SovendusBanner> {
@@ -140,7 +151,8 @@ class _SovendusBanner extends State<SovendusBanner> {
 
   @override
   Widget build(BuildContext context) {
-    widget._controller.setOnConsoleMessage(
+    if (SovendusBanner.isMobile()){
+    widget._controller?.setOnConsoleMessage(
       (JavaScriptConsoleMessage message) {
         updateHeight(message.message);
       },
@@ -153,7 +165,7 @@ class _SovendusBanner extends State<SovendusBanner> {
       height: _webViewHeight,
       child: loadingDone
           ? WebViewWidget(
-              controller: widget._controller,
+              controller: widget._controller ?? WebViewController(),
             )
           : Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -161,6 +173,8 @@ class _SovendusBanner extends State<SovendusBanner> {
                   widget.customProgressIndicator ?? CircularProgressIndicator()
                 ]),
     );
+    }
+    return SizedBox.shrink();
   }
 
   void updateHeight(String windowHeight) async {
