@@ -1,0 +1,27 @@
+## 1.1.0
+
+initial pub.dev version
+
+## 1.1.1
+
+minor bug fixes
+
+## 1.1.2
+
+switch to flutter_inappwebview
+
+## 1.1.3
+
+fix package
+
+## 1.1.4
+
+Fix build android issues
+
+## 1.1.5
+
+Fix build android issues
+
+## 1.1.6
+
+Add loading spinner and fix zooming issues
