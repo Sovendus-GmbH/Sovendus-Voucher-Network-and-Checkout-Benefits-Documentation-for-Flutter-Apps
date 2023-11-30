@@ -1,9 +1,8 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class SovendusCustomerData {
   String? salutation;
@@ -34,9 +33,8 @@ class SovendusCustomerData {
 }
 
 class SovendusBanner extends StatefulWidget {
-  // const SovendusBanner({Key? key}) : super(key: key);
+  late final WebViewController? _controller;
   late final double initialWebViewHeight;
-  late final String sovendusHtml;
 
   final Widget? customProgressIndicator;
 
@@ -55,7 +53,7 @@ class SovendusBanner extends StatefulWidget {
     this.customProgressIndicator,
   }) {
     if (isMobile()) {
-      sovendusHtml = '''
+      String sovendusHtml = '''
         <!DOCTYPE html>
         <html>
             <head>
@@ -116,10 +114,36 @@ class SovendusBanner extends StatefulWidget {
         _initialWebViewHeight += 500;
       }
       initialWebViewHeight = _initialWebViewHeight;
+      final WebViewController controller = WebViewController();
+      controller.loadHtmlString(sovendusHtml);
+      controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+      controller.enableZoom(false);
+      controller.setNavigationDelegate(
+        NavigationDelegate(
+          onNavigationRequest: (NavigationRequest request) {
+            Uri uri = Uri.parse(request.url);
+            if (isNotBlacklistedUrl(uri)) {
+              launchUrl(uri);
+              return NavigationDecision.prevent;
+            }
+            return NavigationDecision.navigate;
+          },
+        ),
+      );
+      _controller = controller;
     }
   }
 
-  static isMobile() {
+  static isNotBlacklistedUrl(Uri uri) {
+    return uri.path != "/banner/api/banner" &&
+        !uri.path.startsWith("/app-list/") &&
+        uri.path != "blank";
+  }
+
+  @override
+  State<SovendusBanner> createState() => _SovendusBanner();
+
+  static bool isMobile() {
     if (kIsWeb) {
       return false;
     } else {
@@ -127,54 +151,45 @@ class SovendusBanner extends StatefulWidget {
     }
   }
 
-  @override
-  State<SovendusBanner> createState() => _SovendusBanner();
+  static bool isAndroid() {
+    if (kIsWeb) {
+      return false;
+    } else {
+      return Platform.isAndroid;
+    }
+  }
 }
 
 class _SovendusBanner extends State<SovendusBanner> {
-  final GlobalKey webViewKey = GlobalKey();
   double webViewHeight = 0;
   bool loadingDone = false;
 
   @override
   Widget build(BuildContext context) {
     if (SovendusBanner.isMobile()) {
+      widget._controller?.setOnConsoleMessage(
+        (JavaScriptConsoleMessage message) {
+          updateHeight(message.message);
+        },
+      );
       double finalWebViewHeight = webViewHeight;
       if (webViewHeight < 20) {
         finalWebViewHeight = widget.initialWebViewHeight;
       }
+
       return SizedBox(
-          height: finalWebViewHeight,
-          child: InAppWebView(
-            key: webViewKey,
-            initialUrlRequest: URLRequest(
-              url: Uri.dataFromString(widget.sovendusHtml,
-                  mimeType: 'text/html', encoding: Encoding.getByName("utf-8")),
-            ),
-            initialOptions: InAppWebViewGroupOptions(
-                crossPlatform: InAppWebViewOptions(
-                    useShouldOverrideUrlLoading: true,
-                    useOnLoadResource: true,
-                    supportZoom: false,
-                    mediaPlaybackRequiresUserGesture: false),
-                ios: IOSInAppWebViewOptions(
-                  allowsInlineMediaPlayback: true,
-                  isPagingEnabled: true,
-                )),
-            onConsoleMessage: (controller, consoleMessage) {
-              updateHeight(consoleMessage.message);
-            },
-            shouldOverrideUrlLoading: (controller, navigationAction) async {
-              var uri = navigationAction.request.url!;
-              if (await canLaunchUrl(uri) && isNotBlacklistedUrl(uri)) {
-                await launchUrl(
-                  uri,
-                );
-                return NavigationActionPolicy.CANCEL;
-              }
-              return NavigationActionPolicy.ALLOW;
-            },
-          ));
+        height: finalWebViewHeight,
+        child: (loadingDone || !SovendusBanner.isAndroid())
+            ? WebViewWidget(
+                controller: widget._controller ?? WebViewController(),
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                    widget.customProgressIndicator ??
+                        const CircularProgressIndicator()
+                  ]),
+      );
     }
     return const SizedBox.shrink();
   }
@@ -189,10 +204,5 @@ class _SovendusBanner extends State<SovendusBanner> {
         });
       }
     }
-  }
-
-  static isNotBlacklistedUrl(Uri uri) {
-    return uri.path != "/banner/api/banner" &&
-        !uri.path.startsWith("/app-list/");
   }
 }
