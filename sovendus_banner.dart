@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+// version 1.0.2
 class SovendusCustomerData {
   String? salutation;
   String? firstName;
@@ -176,10 +177,10 @@ class _SovendusBanner extends State<SovendusBanner> {
       if (webViewHeight < 20) {
         finalWebViewHeight = widget.initialWebViewHeight;
       }
-
+      bool isAndroid = SovendusBanner.isAndroid();
       return SizedBox(
         height: finalWebViewHeight,
-        child: (loadingDone || !SovendusBanner.isAndroid())
+        child: (loadingDone && isAndroid || !isAndroid)
             ? WebViewWidget(
                 controller: widget._controller ?? WebViewController(),
               )
