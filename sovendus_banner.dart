@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-// version 1.0.2
+// version 1.0.3
 class SovendusCustomerData {
   String? salutation;
   String? firstName;
@@ -34,10 +34,10 @@ class SovendusCustomerData {
 }
 
 class SovendusBanner extends StatefulWidget {
-  late final WebViewController? _controller;
+  late final WebViewController? controller;
   late final double initialWebViewHeight;
-
   final Widget? customProgressIndicator;
+  final bool isMobile = isMobileCheck();
 
   SovendusBanner({
     super.key,
@@ -53,7 +53,7 @@ class SovendusBanner extends StatefulWidget {
     SovendusCustomerData? customerData,
     this.customProgressIndicator,
   }) {
-    if (isMobile()) {
+    if (isMobile) {
       String sovendusHtml = '''
         <!DOCTYPE html>
         <html>
@@ -115,11 +115,11 @@ class SovendusBanner extends StatefulWidget {
         _initialWebViewHeight += 500;
       }
       initialWebViewHeight = _initialWebViewHeight;
-      final WebViewController controller = WebViewController();
-      controller.loadHtmlString(sovendusHtml);
-      controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-      controller.enableZoom(false);
-      controller.setNavigationDelegate(
+      WebViewController _controller = WebViewController();
+      _controller.loadHtmlString(sovendusHtml);
+      _controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+      _controller.enableZoom(false);
+      _controller.setNavigationDelegate(
         NavigationDelegate(
           onNavigationRequest: (NavigationRequest request) {
             Uri uri = Uri.parse(request.url);
@@ -131,7 +131,7 @@ class SovendusBanner extends StatefulWidget {
           },
         ),
       );
-      _controller = controller;
+      controller = _controller;
     }
   }
 
@@ -144,19 +144,11 @@ class SovendusBanner extends StatefulWidget {
   @override
   State<SovendusBanner> createState() => _SovendusBanner();
 
-  static bool isMobile() {
+  static bool isMobileCheck() {
     if (kIsWeb) {
       return false;
     } else {
       return Platform.isIOS || Platform.isAndroid;
-    }
-  }
-
-  static bool isAndroid() {
-    if (kIsWeb) {
-      return false;
-    } else {
-      return Platform.isAndroid;
     }
   }
 }
@@ -164,26 +156,34 @@ class SovendusBanner extends StatefulWidget {
 class _SovendusBanner extends State<SovendusBanner> {
   double webViewHeight = 0;
   bool loadingDone = false;
+  late final WebViewWidget webViewWidget;
 
   @override
-  Widget build(BuildContext context) {
-    if (SovendusBanner.isMobile()) {
-      widget._controller?.setOnConsoleMessage(
+  void initState() {
+    if (widget.isMobile) {
+      widget.controller?.setOnConsoleMessage(
         (JavaScriptConsoleMessage message) {
           updateHeight(message.message);
         },
       );
-      double finalWebViewHeight = webViewHeight;
+      webViewWidget = WebViewWidget(
+        controller: widget.controller ?? WebViewController(),
+      );
+    }
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.isMobile) {
+      double widgetHeight = webViewHeight;
       if (webViewHeight < 20) {
-        finalWebViewHeight = widget.initialWebViewHeight;
+        widgetHeight = widget.initialWebViewHeight;
       }
-      bool isAndroid = SovendusBanner.isAndroid();
       return SizedBox(
-        height: finalWebViewHeight,
-        child: (loadingDone && isAndroid || !isAndroid)
-            ? WebViewWidget(
-                controller: widget._controller ?? WebViewController(),
-              )
+        height: widgetHeight,
+        child: loadingDone
+            ? webViewWidget
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
@@ -195,9 +195,9 @@ class _SovendusBanner extends State<SovendusBanner> {
     return const SizedBox.shrink();
   }
 
-  void updateHeight(String windowHeight) async {
-    if (windowHeight.startsWith("height")) {
-      double height = double.parse(windowHeight.replaceAll("height", ""));
+  void updateHeight(String consoleMessage) async {
+    if (consoleMessage.startsWith("height")) {
+      double height = double.parse(consoleMessage.replaceAll("height", ""));
       if (webViewHeight != height && height > 20) {
         setState(() {
           webViewHeight = height;
