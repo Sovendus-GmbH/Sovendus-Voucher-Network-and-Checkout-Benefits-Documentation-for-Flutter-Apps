@@ -79,7 +79,9 @@ class SovendusBanner extends StatefulWidget {
                           orderId: "$orderId",
                           orderValue: "$netOrderValue",
                           orderCurrency: "$currencyCode",
-                          usedCouponCode: "$usedCouponCode"
+                          usedCouponCode: "$usedCouponCode",
+                          integrationType: "flutter-1.0.3"
+
                       });
                     }
                     if ("$trafficMediumNumberCheckoutBenefits"){
@@ -87,6 +89,8 @@ class SovendusBanner extends StatefulWidget {
                           trafficSourceNumber: "$trafficSourceNumber",
                           trafficMediumNumber: "$trafficMediumNumberCheckoutBenefits",
                           iframeContainerId: "sovendus-checkout-benefits-banner",
+                          integrationType: "flutter-1.0.3"
+
                       });
                     }
                     window.sovConsumer = {
