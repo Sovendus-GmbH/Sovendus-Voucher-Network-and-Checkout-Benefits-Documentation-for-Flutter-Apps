@@ -6,8 +6,8 @@
     - Make sure to replace the arguments with the actual data from the purchase. 
     - Replace YOUR_TRAFFIC_SOURCE_NUMBER with the one we provided you. 
     - If you want to use the Voucher network, replace YOUR_VOUCHER_NETWORK_TRAFFIC_MEDIUM_NUMBER with the one we provided you, or remove the argument.
-    - If you also use Checkout Benefits, replace YOUR_CHECKOUT_BENEFITS_TRAFFIC_MEDIUM_NUMBER with the one we provided you, or remove the argument. \
-    - Note that the height of the widget is determined by its content \
+    - If you also use Checkout Benefits, replace YOUR_CHECKOUT_BENEFITS_TRAFFIC_MEDIUM_NUMBER with the one we provided you, or remove the argument.
+    - Note that the height of the widget is determined by its content
 
     You can use the component like this:
 ```dart 
