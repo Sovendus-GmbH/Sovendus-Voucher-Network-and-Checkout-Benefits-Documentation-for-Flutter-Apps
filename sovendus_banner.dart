@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-// version 1.0.3
+// version 1.0.4
 class SovendusCustomerData {
   String? salutation;
   String? firstName;
@@ -34,7 +34,7 @@ class SovendusCustomerData {
 }
 
 class SovendusBanner extends StatefulWidget {
-  late final WebViewController? controller;
+  late final String sovendusHtml;
   late final double initialWebViewHeight;
   final Widget? customProgressIndicator;
   final bool isMobile = isMobileCheck();
@@ -54,7 +54,7 @@ class SovendusBanner extends StatefulWidget {
     this.customProgressIndicator,
   }) {
     if (isMobile) {
-      String sovendusHtml = '''
+      sovendusHtml = '''
         <!DOCTYPE html>
         <html>
             <head>
@@ -89,7 +89,7 @@ class SovendusBanner extends StatefulWidget {
                           trafficSourceNumber: "$trafficSourceNumber",
                           trafficMediumNumber: "$trafficMediumNumberCheckoutBenefits",
                           iframeContainerId: "sovendus-checkout-benefits-banner",
-                          integrationType: "flutter-1.0.3"
+                          integrationType: "flutter-1.0.4"
 
                       });
                     }
@@ -119,23 +119,6 @@ class SovendusBanner extends StatefulWidget {
         _initialWebViewHeight += 500;
       }
       initialWebViewHeight = _initialWebViewHeight;
-      WebViewController _controller = WebViewController();
-      _controller.loadHtmlString(sovendusHtml);
-      _controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-      _controller.enableZoom(false);
-      _controller.setNavigationDelegate(
-        NavigationDelegate(
-          onNavigationRequest: (NavigationRequest request) {
-            Uri uri = Uri.parse(request.url);
-            if (isNotBlacklistedUrl(uri)) {
-              launchUrl(uri);
-              return NavigationDecision.prevent;
-            }
-            return NavigationDecision.navigate;
-          },
-        ),
-      );
-      controller = _controller;
     }
   }
 
@@ -165,13 +148,29 @@ class _SovendusBanner extends State<SovendusBanner> {
   @override
   void initState() {
     if (widget.isMobile) {
-      widget.controller?.setOnConsoleMessage(
+      WebViewController _controller = WebViewController();
+      _controller.setOnConsoleMessage(
         (JavaScriptConsoleMessage message) {
           updateHeight(message.message);
         },
       );
+      _controller.loadHtmlString(widget.sovendusHtml);
+      _controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+      _controller.enableZoom(false);
+      _controller.setNavigationDelegate(
+        NavigationDelegate(
+          onNavigationRequest: (NavigationRequest request) {
+            Uri uri = Uri.parse(request.url);
+            if (SovendusBanner.isNotBlacklistedUrl(uri)) {
+              launchUrl(uri);
+              return NavigationDecision.prevent;
+            }
+            return NavigationDecision.navigate;
+          },
+        ),
+      );
       webViewWidget = WebViewWidget(
-        controller: widget.controller ?? WebViewController(),
+        controller: _controller,
       );
     }
     super.initState();
