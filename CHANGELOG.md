@@ -25,3 +25,19 @@ Fix build android issues
 ## 1.1.6
 
 Add loading spinner and fix zooming issues
+
+## 1.1.7
+
+allow lowe url_launcher versions
+
+## 1.1.8
+
+allow flutter_inappwebview down to 5.8.0
+
+## 1.1.9
+
+allow flutter_inappwebview down to 5.8.0
+
+## 1.1.10
+
+clean up

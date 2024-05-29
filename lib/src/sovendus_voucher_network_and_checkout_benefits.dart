@@ -169,9 +169,9 @@ class _SovendusBanner extends State<SovendusBanner> {
           }
           return NavigationActionPolicy.ALLOW;
         },
-        onWebViewCreated: (controller) {
-          // controller.loadData(data: widget.sovendusHtml);
-        },
+        // onWebViewCreated: (controller) {
+        //   // controller.loadData(data: widget.sovendusHtml);
+        // },
       );
     }
     super.initState();
@@ -184,7 +184,7 @@ class _SovendusBanner extends State<SovendusBanner> {
           height: webViewHeight,
           child: Column(children: [
             SizedBox(
-                height: doneLoading ? webViewHeight : 0, child: webViewWidget),
+                height: doneLoading ? webViewHeight : 1, child: webViewWidget),
             ...doneLoading
                 ? []
                 : [
@@ -203,7 +203,6 @@ class _SovendusBanner extends State<SovendusBanner> {
   }
 
   Future<void> updateHeight(String consoleMessage) async {
-    print(consoleMessage);
     if (consoleMessage.startsWith('height')) {
       final height = double.parse(consoleMessage.replaceAll('height', ''));
       if (webViewHeight != height && height > 100) {
