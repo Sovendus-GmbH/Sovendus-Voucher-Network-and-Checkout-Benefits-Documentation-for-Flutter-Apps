@@ -9,19 +9,16 @@
 2. Use the component on the order success page, where you want to display the Sovendus banner.
 
    - Make sure to replace the arguments with the actual data from the purchase.
-   - Replace YOUR_TRAFFIC_SOURCE_NUMBER with the one we provided you.
-   - If you want to use the Voucher network, replace YOUR_VOUCHER_NETWORK_TRAFFIC_MEDIUM_NUMBER with the one we provided you, or remove the argument.
-   - If you also use Checkout Benefits, replace YOUR_CHECKOUT_BENEFITS_TRAFFIC_MEDIUM_NUMBER with the one we provided you, or remove the argument.
+   - Replace YOUR_TRAFFIC_SOURCE_NUMBER and TRAFFIC_MEDIUM_NUMBER with the one we provided you.
    - Note that the height of the widget is determined by its content
 
    You can use the component like this:
-   
+
    ```dart
    import 'package:sovendus_voucher_network_and_checkout_benefits/sovendus_voucher_network_and_checkout_benefits.dart';
    SovendusBanner(
        trafficSourceNumber: YOUR_TRAFFIC_SOURCE_NUMBER,
-       trafficMediumNumberVoucherNetwork: YOUR_VOUCHER_NETWORK_TRAFFIC_MEDIUM_NUMBER,
-       trafficMediumNumberCheckoutBenefits: YOUR_CHECKOUT_BENEFITS_TRAFFIC_MEDIUM_NUMBER,
+       trafficMediumNumber: TRAFFIC_MEDIUM_NUMBER,
        orderUnixTime: 1699904232,
        sessionId: "kljadkaskdlaksdjaskd",
        orderId: "Order-123",
