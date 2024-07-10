@@ -36,8 +36,7 @@ class SovendusBanner extends StatefulWidget {
   SovendusBanner({
     super.key,
     required int trafficSourceNumber,
-    int? trafficMediumNumberVoucherNetwork,
-    int? trafficMediumNumberCheckoutBenefits,
+    required int trafficMediumNumber,
     required int orderUnixTime,
     required String sessionId,
     required String orderId,
@@ -46,15 +45,18 @@ class SovendusBanner extends StatefulWidget {
     required String usedCouponCode,
     SovendusCustomerData? customerData,
     this.customProgressIndicator,
+    double padding = 0,
+    String backgroundColor = "#fff",
   }) {
     if (isMobile) {
+      String paddingString = "$padding" "px";
       sovendusHtml = '''
         <!DOCTYPE html>
         <html>
             <head>
               <meta name="viewport" content="initial-scale=1" />
             </head>
-            <body id="body">
+            <body id="body" style="padding-bottom: 0; margin: 0; padding-top: $paddingString; padding-left: $paddingString; padding-right: $paddingString; background-color: $backgroundColor">
                 <div id="sovendus-voucher-banner"></div>
                 <div id="sovendus-checkout-benefits-banner"></div>
                 <script type="text/javascript">
@@ -63,26 +65,17 @@ class SovendusBanner extends StatefulWidget {
                         console.log("height" + _body.clientHeight)
                     }).observe(_body);
                     window.sovIframes = [];
-                    if ("$trafficMediumNumberVoucherNetwork"){
-                      window.sovIframes.push({
-                          trafficSourceNumber: "$trafficSourceNumber",
-                          trafficMediumNumber: "$trafficMediumNumberVoucherNetwork",
-                          iframeContainerId: "sovendus-voucher-banner",
-                          timestamp: "$orderUnixTime",
-                          sessionId: "$sessionId",
-                          orderId: "$orderId",
-                          orderValue: "$netOrderValue",
-                          orderCurrency: "$currencyCode",
-                          usedCouponCode: "$usedCouponCode",
-                      });
-                    }
-                    if ("$trafficMediumNumberCheckoutBenefits"){
-                      window.sovIframes.push({
-                          trafficSourceNumber: "$trafficSourceNumber",
-                          trafficMediumNumber: "$trafficMediumNumberCheckoutBenefits",
-                          iframeContainerId: "sovendus-checkout-benefits-banner",
-                      });
-                    }
+                    window.sovIframes.push({
+                        trafficSourceNumber: "$trafficSourceNumber",
+                        trafficMediumNumber: "$trafficMediumNumber",
+                        iframeContainerId: "sovendus-voucher-banner",
+                        timestamp: "$orderUnixTime",
+                        sessionId: "$sessionId",
+                        orderId: "$orderId",
+                        orderValue: "$netOrderValue",
+                        orderCurrency: "$currencyCode",
+                        usedCouponCode: "$usedCouponCode",
+                    });
                     window.sovConsumer = {
                         consumerSalutation: "${customerData?.salutation ?? ""}",
                         consumerFirstName: "${customerData?.firstName ?? ""}",
@@ -101,14 +94,7 @@ class SovendusBanner extends StatefulWidget {
             </body>
         </html>
     ''';
-      double _initialWebViewHeight = 0;
-      if (trafficMediumNumberVoucherNetwork is int) {
-        _initialWebViewHeight += 348;
-      }
-      if (trafficMediumNumberCheckoutBenefits is int) {
-        _initialWebViewHeight += 500;
-      }
-      initialWebViewHeight = _initialWebViewHeight;
+      initialWebViewHeight = 348;
     }
   }
   late final String sovendusHtml;

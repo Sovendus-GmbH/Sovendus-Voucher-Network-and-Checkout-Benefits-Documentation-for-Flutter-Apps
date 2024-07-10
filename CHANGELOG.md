@@ -41,3 +41,15 @@ allow flutter_inappwebview down to 5.8.0
 ## 1.1.10
 
 clean up
+
+## 1.1.11
+
+Remove padding from webview
+
+## 1.1.12
+
+Add option to set padding and background color
+
+## 1.2.0
+
+Remove separate Voucher Network and Checkout Benefits TrafficMediumNumber
