@@ -104,7 +104,7 @@ class SovendusBanner extends StatefulWidget {
 
   static bool isNotBlacklistedUrl(Uri uri) {
     return uri.path != '/banner/api/banner' &&
-        !uri.path.startsWith('/app-list/') &&
+        !uri.path.startsWith('/app-list') &&
         uri.path != 'blank';
   }
 

@@ -53,3 +53,7 @@ Add option to set padding and background color
 ## 1.2.0
 
 Remove separate Voucher Network and Checkout Benefits TrafficMediumNumber
+
+## 1.2.1
+
+Fix Checkout Benefits opening in browser on load
