@@ -1,6 +1,6 @@
 name: sovendus_voucher_network_and_checkout_benefits
 description: Official Sovendus Checkout Benefits & Voucher Network component for FLutter
-version: 1.2.1
+version: 1.2.4
 homepage: "https://sovendus.com"
 
 environment:

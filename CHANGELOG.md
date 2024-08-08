@@ -57,3 +57,15 @@ Remove separate Voucher Network and Checkout Benefits TrafficMediumNumber
 ## 1.2.1
 
 Fix Checkout Benefits opening in browser on load
+
+## 1.2.2
+
+Fix Voucher Network link on iOS
+
+## 1.2.3
+
+Fix url loading on iOS
+
+## 1.2.4
+
+Add integration type and version to sovendus script
