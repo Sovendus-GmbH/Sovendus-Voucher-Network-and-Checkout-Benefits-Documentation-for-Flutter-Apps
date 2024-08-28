@@ -51,7 +51,7 @@ class SovendusBanner extends StatefulWidget {
     if (isMobile) {
       // update with component version number
       String versionNumber = "1.2.4";
-      
+
       String paddingString = "$padding" "px";
       sovendusHtml = '''
         <!DOCTYPE html>
@@ -181,7 +181,7 @@ class _SovendusBanner extends State<SovendusBanner> {
                 ? []
                 : [
                     SizedBox(
-                        height: webViewHeight,
+                        height: webViewHeight - 1,
                         child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[

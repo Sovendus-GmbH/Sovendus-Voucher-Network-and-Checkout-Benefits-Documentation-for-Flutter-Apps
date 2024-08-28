@@ -69,3 +69,7 @@ Fix url loading on iOS
 ## 1.2.4
 
 Add integration type and version to sovendus script
+
+## 1.2.5
+
+Fix overflow by 1px issue
