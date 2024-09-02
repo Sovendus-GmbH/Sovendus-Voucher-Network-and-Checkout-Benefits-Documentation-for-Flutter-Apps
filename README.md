@@ -14,6 +14,8 @@
 
    You can use the component like this:
 
+   [Information about the mandatory Parameters / Data](https://developer-hub.sovendus.com/Voucher-Network-Checkout-Benefits/Parameter)
+
    ```dart
    import 'package:sovendus_voucher_network_and_checkout_benefits/sovendus_voucher_network_and_checkout_benefits.dart';
    SovendusBanner(
