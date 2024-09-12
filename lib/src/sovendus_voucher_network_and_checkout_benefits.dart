@@ -50,9 +50,39 @@ class SovendusBanner extends StatefulWidget {
   }) {
     if (isMobile) {
       // update with component version number
-      String versionNumber = "1.2.4";
+      String versionNumber = "1.2.6";
 
       String paddingString = "$padding" "px";
+
+      String resizeObserver = Platform.isAndroid
+          ? '''
+          const interval = 250; // 250ms
+          const totalDuration = 3000; // 2500ms
+          const maxChecks = totalDuration / interval; // Number of times to check (2500 / 250 = 10)
+
+          let checkCount = 0;
+          let intervalCheckDone = false;
+          const checkInterval = setInterval(() => {
+            checkCount++;
+            console.log(document.body.scrollHeight, checkCount);
+            if (document.body.scrollHeight > 800 || checkCount >= maxChecks) {
+              clearInterval(checkInterval);
+              intervalCheckDone = true;
+              console.log("height" + document.body.scrollHeight);
+            }
+          }, interval);
+          new ResizeObserver(() => {
+            if (intervalCheckDone) {
+              console.log("height" + document.body.scrollHeight);
+            }
+          }).observe(document.body);
+      '''
+          : '''
+        new ResizeObserver(() => {
+          console.log("height" + document.body.scrollHeight);
+        }).observe(document.body);
+      ''';
+
       sovendusHtml = '''
         <!DOCTYPE html>
         <html>
@@ -61,12 +91,8 @@ class SovendusBanner extends StatefulWidget {
             </head>
             <body id="body" style="padding-bottom: 0; margin: 0; padding-top: $paddingString; padding-left: $paddingString; padding-right: $paddingString; background-color: $backgroundColor">
                 <div id="sovendus-voucher-banner"></div>
-                <div id="sovendus-checkout-benefits-banner"></div>
                 <script type="text/javascript">
-                    const _body = document.getElementById("body");
-                    new ResizeObserver(() => {
-                        console.log("height" + _body.clientHeight)
-                    }).observe(_body);
+                    $resizeObserver
                     window.sovApi = "v1";
                     window.addEventListener("message", (event) => {
                       if (event.data.channel === "sovendus:integration") {

@@ -73,3 +73,7 @@ Add integration type and version to sovendus script
 ## 1.2.5
 
 Fix overflow by 1px issue
+
+## 1.2.6
+
+Wait for checkout benefits list to be loaded before displaying content
