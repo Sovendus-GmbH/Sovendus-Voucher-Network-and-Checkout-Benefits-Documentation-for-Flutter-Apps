@@ -13,6 +13,7 @@ class SovendusCustomerData {
     this.email,
     this.phone,
     this.yearOfBirth,
+    this.dateOfBirth,
     this.street,
     this.streetNumber,
     this.zipcode,
@@ -25,6 +26,7 @@ class SovendusCustomerData {
   String? email;
   String? phone;
   int? yearOfBirth;
+  String? dateOfBirth;
   String? street;
   String? streetNumber;
   String? zipcode;
@@ -37,12 +39,12 @@ class SovendusBanner extends StatefulWidget {
     super.key,
     required int trafficSourceNumber,
     required int trafficMediumNumber,
-    required int orderUnixTime,
-    required String sessionId,
-    required String orderId,
-    required double netOrderValue,
-    required String currencyCode,
-    required String usedCouponCode,
+    int orderUnixTime = 0,
+    String sessionId = "",
+    String orderId = "",
+    double netOrderValue = 0,
+    String currencyCode = "",
+    String usedCouponCode = "",
     SovendusCustomerData? customerData,
     this.customProgressIndicator,
     double padding = 0,
@@ -50,7 +52,7 @@ class SovendusBanner extends StatefulWidget {
   }) {
     if (isMobile) {
       // update with component version number
-      String versionNumber = "1.2.6";
+      String versionNumber = "1.2.7";
 
       String paddingString = "$padding" "px";
 
@@ -119,6 +121,7 @@ class SovendusBanner extends StatefulWidget {
                         consumerEmail: "${customerData?.email ?? ""}",
                         consumerPhone : "${customerData?.phone ?? ""}",   
                         consumerYearOfBirth  : "${customerData?.yearOfBirth ?? ""}",   
+                        consumerDateOfBirth  : "${customerData?.dateOfBirth ?? ""}",   
                         consumerStreet: "${customerData?.street ?? ""}",
                         consumerStreetNumber: "${customerData?.streetNumber ?? ""}",
                         consumerZipcode: "${customerData?.zipcode ?? ""}",

@@ -77,3 +77,7 @@ Fix overflow by 1px issue
 ## 1.2.6
 
 Wait for checkout benefits list to be loaded before displaying content
+
+## 1.2.7
+
+Add parameter consumerDateOfBirth and make order data optional

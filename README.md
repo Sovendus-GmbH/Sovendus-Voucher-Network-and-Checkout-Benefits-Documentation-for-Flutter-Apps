@@ -34,6 +34,7 @@
            email: "example@example.com",
            phone: "+4915546456456",
            yearOfBirth: 1990,
+           dateOfBirth: "01.12.2020",
            street: "Teststreet",
            streetNumber: "12/1",
            zipcode: "76135",
