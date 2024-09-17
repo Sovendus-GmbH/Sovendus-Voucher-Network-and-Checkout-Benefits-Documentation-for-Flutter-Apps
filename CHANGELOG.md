@@ -81,3 +81,7 @@ Wait for checkout benefits list to be loaded before displaying content
 ## 1.2.7
 
 Add parameter consumerDateOfBirth and make order data optional
+
+## 1.2.8
+
+Fix checkout benefits list empty sometimes
