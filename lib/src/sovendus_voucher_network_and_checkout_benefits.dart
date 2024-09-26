@@ -52,15 +52,15 @@ class SovendusBanner extends StatefulWidget {
   }) {
     if (isMobile) {
       // update with component version number
-      String versionNumber = "1.2.7";
+      String versionNumber = "1.2.9";
 
       String paddingString = "$padding" "px";
 
       String resizeObserver = Platform.isAndroid
           ? '''
-          const interval = 250; // 250ms
-          const totalDuration = 3000; // 2500ms
-          const maxChecks = totalDuration / interval; // Number of times to check (2500 / 250 = 10)
+          const interval = 250;
+          const totalDuration = 5000;
+          const maxChecks = totalDuration / interval;
 
           let checkCount = 0;
           let intervalCheckDone = false;
