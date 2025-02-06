@@ -1,12 +1,18 @@
-# Add a inline WebView on your success page
 
-1. Download and install the component with the following command:
+
+# Sovendus Component for Flutter
+
+## Disclaimer
+
+This component is released as open source under the GPL v3 license. We welcome bug reports and pull requests from the community. However, please note that the component is provided "as is" without any warranties or guarantees. It may not be compatible with all other plugins and could potentially cause issues with your store. We strongly recommend that you test the plugin thoroughly in a staging environment before deploying it to a live site. Furthermore, we do not promise future support or updates and reserve the right to discontinue support for the component at any time.
+
+## 1. Download and install the component with the following command:
 
    ```bash
    flutter pub add sovendus_voucher_network_and_checkout_benefits
    ```
 
-2. Use the component on the order success page, where you want to display the Sovendus banner.
+## 2. Use the component on the order success page, where you want to display the Sovendus banner.
 
    - Make sure to replace the arguments with the actual data from the purchase.
    - Replace YOUR_TRAFFIC_SOURCE_NUMBER and TRAFFIC_MEDIUM_NUMBER with the one we provided you.
