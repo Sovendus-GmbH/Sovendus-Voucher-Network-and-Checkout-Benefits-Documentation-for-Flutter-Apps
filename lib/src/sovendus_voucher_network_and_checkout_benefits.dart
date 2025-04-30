@@ -49,37 +49,41 @@ class SovendusBanner extends StatefulWidget {
     this.customProgressIndicator,
     double padding = 0,
     String backgroundColor = "#fff",
+    bool disableAndroidWaitingForCheckoutBenefits = false,
   }) {
     if (isMobile) {
       // update with component version number
-      String versionNumber = "1.2.9";
+      String versionNumber = "1.2.10";
 
-      String paddingString = "$padding" "px";
+      String paddingString =
+          "$padding"
+          "px";
 
-      String resizeObserver = Platform.isAndroid
-          ? '''
-          const interval = 250;
-          const totalDuration = 5000;
-          const maxChecks = totalDuration / interval;
+      String resizeObserver =
+          Platform.isAndroid && !disableAndroidWaitingForCheckoutBenefits
+              ? '''
+              const interval = 250;
+              const totalDuration = 5000;
+              const maxChecks = totalDuration / interval;
 
-          let checkCount = 0;
-          let intervalCheckDone = false;
-          const checkInterval = setInterval(() => {
-            checkCount++;
-            console.log(document.body.scrollHeight, checkCount);
-            if (document.body.scrollHeight > 800 || checkCount >= maxChecks) {
-              clearInterval(checkInterval);
-              intervalCheckDone = true;
-              console.log("height" + document.body.scrollHeight);
-            }
-          }, interval);
-          new ResizeObserver(() => {
-            if (intervalCheckDone) {
-              console.log("height" + document.body.scrollHeight);
-            }
-          }).observe(document.body);
-      '''
-          : '''
+              let checkCount = 0;
+              let intervalCheckDone = false;
+              const checkInterval = setInterval(() => {
+                checkCount++;
+                console.log(document.body.scrollHeight, checkCount);
+                if (document.body.scrollHeight > 800 || checkCount >= maxChecks) {
+                  clearInterval(checkInterval);
+                  intervalCheckDone = true;
+                  console.log("height" + document.body.scrollHeight);
+                }
+              }, interval);
+              new ResizeObserver(() => {
+                if (intervalCheckDone) {
+                  console.log("height" + document.body.scrollHeight);
+                }
+              }).observe(document.body);
+          '''
+              : '''
         new ResizeObserver(() => {
           console.log("height" + document.body.scrollHeight);
         }).observe(document.body);
@@ -171,15 +175,14 @@ class _SovendusBanner extends State<SovendusBanner> {
       webViewWidget = InAppWebView(
         initialData: InAppWebViewInitialData(data: widget.sovendusHtml),
         initialOptions: InAppWebViewGroupOptions(
-          ios: IOSInAppWebViewOptions(
-            allowsInlineMediaPlayback: true,
-          ),
+          ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
           android: AndroidInAppWebViewOptions(textZoom: 100),
           crossPlatform: InAppWebViewOptions(
-              // mediaPlaybackRequiresUserGesture: false,
-              // To prevent links from opening in external browser.
-              useShouldOverrideUrlLoading: true,
-              supportZoom: false),
+            // mediaPlaybackRequiresUserGesture: false,
+            // To prevent links from opening in external browser.
+            useShouldOverrideUrlLoading: true,
+            supportZoom: false,
+          ),
         ),
         onConsoleMessage: (controller, consoleMessage) {
           processConsoleMessage(consoleMessage.message);
@@ -202,23 +205,30 @@ class _SovendusBanner extends State<SovendusBanner> {
   Widget build(BuildContext context) {
     if (widget.isMobile) {
       return SizedBox(
-          height: webViewHeight,
-          child: Column(children: [
+        height: webViewHeight,
+        child: Column(
+          children: [
             SizedBox(
-                height: doneLoading ? webViewHeight : 1, child: webViewWidget),
+              height: doneLoading ? webViewHeight : 1,
+              child: webViewWidget,
+            ),
             ...doneLoading
                 ? []
                 : [
-                    SizedBox(
-                        height: webViewHeight - 1,
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              widget.customProgressIndicator ??
-                                  const CircularProgressIndicator()
-                            ]))
-                  ]
-          ]));
+                  SizedBox(
+                    height: webViewHeight - 1,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        widget.customProgressIndicator ??
+                            const CircularProgressIndicator(),
+                      ],
+                    ),
+                  ),
+                ],
+          ],
+        ),
+      );
     }
     return const SizedBox.shrink();
   }

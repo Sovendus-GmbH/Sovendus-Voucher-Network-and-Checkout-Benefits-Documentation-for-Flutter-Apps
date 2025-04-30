@@ -85,3 +85,11 @@ Add parameter consumerDateOfBirth and make order data optional
 ## 1.2.8
 
 Fix checkout benefits list empty sometimes
+
+## 1.2.9
+
+bump resize timeout to 5 seconds
+
+## 1.2.10
+
+add option to disable waiting for checkout benefits list
