@@ -53,11 +53,53 @@ class SovendusBanner extends StatefulWidget {
   }) {
     if (isMobile) {
       // update with component version number
-      String versionNumber = "1.2.10";
+      String versionNumber = "1.2.11";
 
-      String paddingString =
-          "$padding"
-          "px";
+      final sanitizedSessionId = sanitizeHtml(sessionId);
+      final sanitizedOrderId = sanitizeHtml(orderId);
+      final sanitizedCurrencyCode = sanitizeHtml(currencyCode);
+      final sanitizedUsedCouponCode = sanitizeHtml(usedCouponCode);
+      final sanitizedBackgroundColor = sanitizeHtml(backgroundColor);
+
+      // Create sanitized customer data
+      final sanitizedCustomerData = SovendusCustomerData(
+        salutation: customerData?.salutation != null
+            ? sanitizeHtml(customerData!.salutation!)
+            : null,
+        firstName: customerData?.firstName != null
+            ? sanitizeHtml(customerData!.firstName!)
+            : null,
+        lastName: customerData?.lastName != null
+            ? sanitizeHtml(customerData!.lastName!)
+            : null,
+        email: customerData?.email != null
+            ? sanitizeHtml(customerData!.email!)
+            : null,
+        phone: customerData?.phone != null
+            ? sanitizeHtml(customerData!.phone!)
+            : null,
+        yearOfBirth: customerData?.yearOfBirth,
+        dateOfBirth: customerData?.dateOfBirth != null
+            ? sanitizeHtml(customerData!.dateOfBirth!)
+            : null,
+        street: customerData?.street != null
+            ? sanitizeHtml(customerData!.street!)
+            : null,
+        streetNumber: customerData?.streetNumber != null
+            ? sanitizeHtml(customerData!.streetNumber!)
+            : null,
+        zipcode: customerData?.zipcode != null
+            ? sanitizeHtml(customerData!.zipcode!)
+            : null,
+        city: customerData?.city != null
+            ? sanitizeHtml(customerData!.city!)
+            : null,
+        country: customerData?.country != null
+            ? sanitizeHtml(customerData!.country!)
+            : null,
+      );
+
+      String paddingString = "$padding" "px";
 
       String resizeObserver =
           Platform.isAndroid && !disableAndroidWaitingForCheckoutBenefits
@@ -95,7 +137,7 @@ class SovendusBanner extends StatefulWidget {
             <head>
               <meta name="viewport" content="initial-scale=1" />
             </head>
-            <body id="body" style="padding-bottom: 0; margin: 0; padding-top: $paddingString; padding-left: $paddingString; padding-right: $paddingString; background-color: $backgroundColor">
+            <body id="body" style="padding-bottom: 0; margin: 0; padding-top: $paddingString; padding-left: $paddingString; padding-right: $paddingString; background-color: $sanitizedBackgroundColor">
                 <div id="sovendus-voucher-banner"></div>
                 <script type="text/javascript">
                     $resizeObserver
@@ -111,26 +153,26 @@ class SovendusBanner extends StatefulWidget {
                         trafficMediumNumber: "$trafficMediumNumber",
                         iframeContainerId: "sovendus-voucher-banner",
                         timestamp: "$orderUnixTime",
-                        sessionId: "$sessionId",
-                        orderId: "$orderId",
+                        sessionId: "$sanitizedSessionId",
+                        orderId: "$sanitizedOrderId",
                         orderValue: "$netOrderValue",
-                        orderCurrency: "$currencyCode",
-                        usedCouponCode: "$usedCouponCode",
+                        orderCurrency: "$sanitizedCurrencyCode",
+                        usedCouponCode: "$sanitizedUsedCouponCode",
                         integrationType: "flutter-$versionNumber",
                     });
                     window.sovConsumer = {
-                        consumerSalutation: "${customerData?.salutation ?? ""}",
-                        consumerFirstName: "${customerData?.firstName ?? ""}",
-                        consumerLastName: "${customerData?.lastName ?? ""}",
-                        consumerEmail: "${customerData?.email ?? ""}",
-                        consumerPhone : "${customerData?.phone ?? ""}",   
-                        consumerYearOfBirth  : "${customerData?.yearOfBirth ?? ""}",   
-                        consumerDateOfBirth  : "${customerData?.dateOfBirth ?? ""}",   
-                        consumerStreet: "${customerData?.street ?? ""}",
-                        consumerStreetNumber: "${customerData?.streetNumber ?? ""}",
-                        consumerZipcode: "${customerData?.zipcode ?? ""}",
-                        consumerCity: "${customerData?.city ?? ""}",
-                        consumerCountry: "${customerData?.country ?? ""}",
+                        consumerSalutation: "${sanitizedCustomerData.salutation ?? ""}",
+                        consumerFirstName: "${sanitizedCustomerData.firstName ?? ""}",
+                        consumerLastName: "${sanitizedCustomerData.lastName ?? ""}",
+                        consumerEmail: "${sanitizedCustomerData.email ?? ""}",
+                        consumerPhone : "${sanitizedCustomerData.phone ?? ""}",   
+                        consumerYearOfBirth  : "${sanitizedCustomerData.yearOfBirth ?? ""}",   
+                        consumerDateOfBirth  : "${sanitizedCustomerData.dateOfBirth ?? ""}",   
+                        consumerStreet: "${sanitizedCustomerData.street ?? ""}",
+                        consumerStreetNumber: "${sanitizedCustomerData.streetNumber ?? ""}",
+                        consumerZipcode: "${sanitizedCustomerData.zipcode ?? ""}",
+                        consumerCity: "${sanitizedCustomerData.city ?? ""}",
+                        consumerCountry: "${sanitizedCustomerData.country ?? ""}",
                     };
                 </script>
                 <script type="text/javascript" src="https://api.sovendus.com/sovabo/common/js/flexibleIframe.js" async=true></script>
@@ -153,6 +195,16 @@ class SovendusBanner extends StatefulWidget {
 
   @override
   State<SovendusBanner> createState() => _SovendusBanner();
+
+  /// Sanitizes HTML input by escaping special characters to prevent XSS attacks
+  String sanitizeHtml(String input) {
+    return input
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#x27;');
+  }
 
   static bool isMobileCheck() {
     if (kIsWeb) {
