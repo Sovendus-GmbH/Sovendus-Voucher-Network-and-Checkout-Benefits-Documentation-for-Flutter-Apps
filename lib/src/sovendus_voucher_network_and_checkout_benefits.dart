@@ -36,20 +36,95 @@ class SovendusCustomerData {
   final String? city;
   final String? country;
 
-  SovendusCustomerData sanitized() {
-    return SovendusCustomerData(
-      salutation: HtmlSanitizer.sanitizeNullable(salutation),
-      firstName: HtmlSanitizer.sanitizeNullable(firstName),
-      lastName: HtmlSanitizer.sanitizeNullable(lastName),
-      email: HtmlSanitizer.sanitizeNullable(email),
-      phone: HtmlSanitizer.sanitizeNullable(phone),
-      yearOfBirth: yearOfBirth,
-      dateOfBirth: HtmlSanitizer.sanitizeNullable(dateOfBirth),
-      street: HtmlSanitizer.sanitizeNullable(street),
-      streetNumber: HtmlSanitizer.sanitizeNullable(streetNumber),
-      zipcode: HtmlSanitizer.sanitizeNullable(zipcode),
-      city: HtmlSanitizer.sanitizeNullable(city),
-      country: HtmlSanitizer.sanitizeNullable(country),
+  SovendusCustomerData sanitized(
+      {Function(String errorMessage, dynamic error)? onError,
+      int? trafficSourceNumber,
+      int? trafficMediumNumber}) {
+    try {
+      final sanitizer = HtmlSanitizer(
+        trafficSourceNumber: trafficSourceNumber ?? 0,
+        trafficMediumNumber: trafficMediumNumber ?? 0,
+        onError: onError,
+      );
+
+      return SovendusCustomerData(
+        salutation: sanitizer.sanitizeNullable(salutation),
+        firstName: sanitizer.sanitizeNullable(firstName),
+        lastName: sanitizer.sanitizeNullable(lastName),
+        email: sanitizer.sanitizeNullable(email),
+        phone: sanitizer.sanitizeNullable(phone),
+        yearOfBirth:
+            yearOfBirth, // Note: yearOfBirth will be sanitized when used in HTML generation
+        dateOfBirth: sanitizer.sanitizeNullable(dateOfBirth),
+        street: sanitizer.sanitizeNullable(street),
+        streetNumber: sanitizer.sanitizeNullable(streetNumber),
+        zipcode: sanitizer.sanitizeNullable(zipcode),
+        city: sanitizer.sanitizeNullable(city),
+        country: sanitizer.sanitizeNullable(country),
+      );
+    } catch (e) {
+      SovendusBanner.reportError(
+        'Error sanitizing customer data',
+        e,
+        onError: onError,
+        type: 'sanitization-error',
+        trafficSourceNumber: trafficSourceNumber,
+        trafficMediumNumber: trafficMediumNumber,
+      );
+      // Return empty customer data as fallback
+      return const SovendusCustomerData();
+    }
+  }
+}
+
+/// Order data class for Sovendus integration
+class SovendusOrderData {
+  final String sessionId;
+  final String orderId;
+  final String currencyCode;
+  final String usedCouponCode;
+  final String backgroundColor;
+  final int trafficSourceNumber;
+  final int trafficMediumNumber;
+  final int orderUnixTime;
+  final double netOrderValue;
+  final double padding;
+  final SovendusCustomerData? customerData;
+
+  const SovendusOrderData({
+    required this.sessionId,
+    required this.orderId,
+    required this.currencyCode,
+    required this.usedCouponCode,
+    required this.backgroundColor,
+    required this.trafficSourceNumber,
+    required this.trafficMediumNumber,
+    required this.orderUnixTime,
+    required this.netOrderValue,
+    required this.padding,
+    this.customerData,
+  });
+
+  SovendusOrderData sanitized(HtmlSanitizer sanitizer) {
+    return SovendusOrderData(
+      sessionId: sanitizer.sanitize(sessionId),
+      orderId: sanitizer.sanitize(orderId),
+      currencyCode: sanitizer.sanitize(currencyCode),
+      usedCouponCode: sanitizer.sanitize(usedCouponCode),
+      backgroundColor: sanitizer.sanitize(backgroundColor),
+      trafficSourceNumber:
+          int.tryParse(sanitizer.sanitizeInt(trafficSourceNumber)) ?? 0,
+      trafficMediumNumber:
+          int.tryParse(sanitizer.sanitizeInt(trafficMediumNumber)) ?? 0,
+      orderUnixTime: int.tryParse(sanitizer.sanitizeInt(orderUnixTime)) ?? 0,
+      netOrderValue:
+          double.tryParse(sanitizer.sanitizeDouble(netOrderValue)) ?? 0.0,
+      padding: double.tryParse(sanitizer.sanitizeDouble(padding)) ?? 0.0,
+      customerData: customerData?.sanitized(
+        onError: sanitizer.onError,
+        trafficSourceNumber: trafficSourceNumber,
+        trafficMediumNumber: trafficMediumNumber,
+      ),
     );
   }
 }
@@ -89,119 +164,31 @@ class SovendusBanner extends StatefulWidget {
   final Function(String errorMessage, dynamic error)? onError;
 
   // update with component version number
-  static const String versionNumber = "1.2.11";
+  static const String versionNumber = "1.3.0";
 
-  /// Generates the HTML content for the Sovendus banner
   String generateHtml() {
     if (!isMobileCheck) return '';
 
     try {
-      final sanitizedSessionId = HtmlSanitizer.sanitize(sessionId);
-      final sanitizedOrderId = HtmlSanitizer.sanitize(orderId);
-      final sanitizedCurrencyCode = HtmlSanitizer.sanitize(currencyCode);
-      final sanitizedUsedCouponCode = HtmlSanitizer.sanitize(usedCouponCode);
-      final sanitizedBackgroundColor = HtmlSanitizer.sanitize(backgroundColor);
+      final sanitizer = HtmlSanitizer(
+        trafficSourceNumber: trafficSourceNumber,
+        trafficMediumNumber: trafficMediumNumber,
+        onError: onError,
+      );
 
-      // Create sanitized customer data using the sanitized() method
-      final sanitizedCustomerData =
-          customerData?.sanitized() ?? const SovendusCustomerData();
+      final orderData = _createOrderData().sanitized(sanitizer);
+      final consumerJson = _createConsumerJson(orderData, sanitizer);
+      final resizeObserver = _createResizeObserver();
+      final paddingString = "${orderData.padding}px";
 
-      String paddingString = "${padding}px";
-
-      String resizeObserver =
-          Platform.isAndroid && !disableAndroidWaitingForCheckoutBenefits
-              ? '''
-              const interval = 250;
-              const totalDuration = 5000;
-              const maxChecks = totalDuration / interval;
-
-              let checkCount = 0;
-              let intervalCheckDone = false;
-              const checkInterval = setInterval(() => {
-                checkCount++;
-                if (document.body.scrollHeight > 800 || checkCount >= maxChecks) {
-                  clearInterval(checkInterval);
-                  intervalCheckDone = true;
-                  window.flutter_inappwebview.callHandler('sovHandler', {
-                    type: 'height',
-                    value: document.body.scrollHeight
-                  });
-                }
-              }, interval);
-              new ResizeObserver(() => {
-                if (intervalCheckDone) {
-                  window.flutter_inappwebview.callHandler('sovHandler', {
-                    type: 'height',
-                    value: document.body.scrollHeight
-                  });
-                }
-              }).observe(document.body);
-          '''
-              : '''
-        new ResizeObserver(() => {
-          window.flutter_inappwebview.callHandler('sovHandler', {
-            type: 'height',
-            value: document.body.scrollHeight
-          });
-        }).observe(document.body);
-      ''';
-
-      return '''
-        <!DOCTYPE html>
-        <html>
-            <head>
-              <meta name="viewport" content="initial-scale=1" />
-            </head>
-            <body id="body" style="padding-bottom: 0; margin: 0; padding-top: $paddingString; padding-left: $paddingString; padding-right: $paddingString; background-color: $sanitizedBackgroundColor">
-                <div id="sovendus-voucher-banner"></div>
-                <script type="text/javascript">
-                    $resizeObserver
-                    window.sovApi = "v1";
-                    window.addEventListener("message", (event) => {
-                      if (event.data.channel === "sovendus:integration") {
-                        window.flutter_inappwebview.callHandler('sovHandler', {
-                          type: 'openUrl',
-                          value: event.data.payload.url
-                        });
-                      }
-                    });
-                    window.sovIframes = [];
-                    window.sovIframes.push({
-                        trafficSourceNumber: "$trafficSourceNumber",
-                        trafficMediumNumber: "$trafficMediumNumber",
-                        iframeContainerId: "sovendus-voucher-banner",
-                        timestamp: "$orderUnixTime",
-                        sessionId: "$sanitizedSessionId",
-                        orderId: "$sanitizedOrderId",
-                        orderValue: "$netOrderValue",
-                        orderCurrency: "$sanitizedCurrencyCode",
-                        usedCouponCode: "$sanitizedUsedCouponCode",
-                        integrationType: "flutter-$versionNumber",
-                    });
-                    window.sovConsumer = {
-                        consumerSalutation: "${sanitizedCustomerData.salutation ?? ""}",
-                        consumerFirstName: "${sanitizedCustomerData.firstName ?? ""}",
-                        consumerLastName: "${sanitizedCustomerData.lastName ?? ""}",
-                        consumerEmail: "${sanitizedCustomerData.email ?? ""}",
-                        consumerPhone : "${sanitizedCustomerData.phone ?? ""}",
-                        consumerYearOfBirth: "${sanitizedCustomerData.yearOfBirth ?? ""}",
-                        consumerDateOfBirth: "${sanitizedCustomerData.dateOfBirth ?? ""}",
-                        consumerStreet: "${sanitizedCustomerData.street ?? ""}",
-                        consumerStreetNumber: "${sanitizedCustomerData.streetNumber ?? ""}",
-                        consumerZipcode: "${sanitizedCustomerData.zipcode ?? ""}",
-                        consumerCity: "${sanitizedCustomerData.city ?? ""}",
-                        consumerCountry: "${sanitizedCustomerData.country ?? ""}",
-                    };
-                </script>
-                <script type="text/javascript" src="https://api.sovendus.com/sovabo/common/js/flexibleIframe.js" async=true></script>
-            </body>
-        </html>
-      ''';
+      return _buildHtmlTemplate(
+          orderData, consumerJson, resizeObserver, paddingString);
     } catch (e) {
       reportError(
         'Error generating Sovendus HTML',
         e,
         onError: onError,
+        type: 'html-generation-error',
         trafficSourceNumber: trafficSourceNumber,
         trafficMediumNumber: trafficMediumNumber,
       );
@@ -209,9 +196,140 @@ class SovendusBanner extends StatefulWidget {
     }
   }
 
+  SovendusOrderData _createOrderData() {
+    return SovendusOrderData(
+      sessionId: sessionId,
+      orderId: orderId,
+      currencyCode: currencyCode,
+      usedCouponCode: usedCouponCode,
+      backgroundColor: backgroundColor,
+      trafficSourceNumber: trafficSourceNumber,
+      trafficMediumNumber: trafficMediumNumber,
+      orderUnixTime: orderUnixTime,
+      netOrderValue: netOrderValue,
+      padding: padding,
+      customerData: customerData,
+    );
+  }
+
+  /// consumer JSON with fallback
+  String _createConsumerJson(
+      SovendusOrderData orderData, HtmlSanitizer sanitizer) {
+    try {
+      final customerData =
+          orderData.customerData ?? const SovendusCustomerData();
+      final consumerMap = {
+        'consumerSalutation': customerData.salutation ?? "",
+        'consumerFirstName': customerData.firstName ?? "",
+        'consumerLastName': customerData.lastName ?? "",
+        'consumerEmail': customerData.email ?? "",
+        'consumerPhone': customerData.phone ?? "",
+        'consumerYearOfBirth':
+            sanitizer.sanitizeIntNullable(customerData.yearOfBirth) ?? "",
+        'consumerDateOfBirth': customerData.dateOfBirth ?? "",
+        'consumerStreet': customerData.street ?? "",
+        'consumerStreetNumber': customerData.streetNumber ?? "",
+        'consumerZipcode': customerData.zipcode ?? "",
+        'consumerCity': customerData.city ?? "",
+        'consumerCountry': customerData.country ?? "",
+      };
+      return jsonEncode(consumerMap);
+    } catch (e) {
+      reportError(
+        'Error creating consumer JSON',
+        e,
+        onError: onError,
+        type: 'consumer-json-creation-error',
+        trafficSourceNumber: trafficSourceNumber,
+        trafficMediumNumber: trafficMediumNumber,
+      );
+      return '{}';
+    }
+  }
+
+  String _createResizeObserver() {
+    return Platform.isAndroid && !disableAndroidWaitingForCheckoutBenefits
+        ? '''
+        const interval = 250;
+        const totalDuration = 5000;
+        const maxChecks = totalDuration / interval;
+
+        let checkCount = 0;
+        let intervalCheckDone = false;
+        const checkInterval = setInterval(() => {
+          checkCount++;
+          if (document.body.scrollHeight > 800 || checkCount >= maxChecks) {
+            clearInterval(checkInterval);
+            intervalCheckDone = true;
+            window.flutter_inappwebview.callHandler('sovHandler', {
+              type: 'height',
+              value: document.body.scrollHeight
+            });
+          }
+        }, interval);
+        new ResizeObserver(() => {
+          if (intervalCheckDone) {
+            window.flutter_inappwebview.callHandler('sovHandler', {
+              type: 'height',
+              value: document.body.scrollHeight
+            });
+          }
+        }).observe(document.body);
+        '''
+        : '''
+        new ResizeObserver(() => {
+          window.flutter_inappwebview.callHandler('sovHandler', {
+            type: 'height',
+            value: document.body.scrollHeight
+          });
+        }).observe(document.body);
+        ''';
+  }
+
+  String _buildHtmlTemplate(SovendusOrderData orderData, String consumerJson,
+      String resizeObserver, String paddingString) {
+    return '''
+      <!DOCTYPE html>
+      <html>
+          <head>
+            <meta name="viewport" content="initial-scale=1" />
+          </head>
+          <body id="body" style="padding-bottom: 0; margin: 0; padding-top: $paddingString; padding-left: $paddingString; padding-right: $paddingString; background-color: ${orderData.backgroundColor}">
+              <div id="sovendus-voucher-banner"></div>
+              <script type="text/javascript">
+                  $resizeObserver
+                  window.sovApi = "v1";
+                  window.addEventListener("message", (event) => {
+                    if (event.data.channel === "sovendus:integration") {
+                      window.flutter_inappwebview.callHandler('sovHandler', {
+                        type: 'openUrl',
+                        value: event.data.payload.url
+                      });
+                    }
+                  });
+                  window.sovIframes = [];
+                  window.sovIframes.push({
+                      trafficSourceNumber: "${orderData.trafficSourceNumber}",
+                      trafficMediumNumber: "${orderData.trafficMediumNumber}",
+                      iframeContainerId: "sovendus-voucher-banner",
+                      timestamp: "${orderData.orderUnixTime}",
+                      sessionId: "${orderData.sessionId}",
+                      orderId: "${orderData.orderId}",
+                      orderValue: "${orderData.netOrderValue}",
+                      orderCurrency: "${orderData.currencyCode}",
+                      usedCouponCode: "${orderData.usedCouponCode}",
+                      integrationType: "flutter-$versionNumber",
+                  });
+                  window.sovConsumer = $consumerJson;
+              </script>
+              <script type="text/javascript" src="https://api.sovendus.com/sovabo/common/js/flexibleIframe.js" async=true></script>
+          </body>
+      </html>
+    ''';
+  }
+
   static double initialWebViewHeight = 348.0;
 
-  /// Gets the generated HTML content for the banner
   String get sovendusHtml => generateHtml();
 
   static String errorApi = 'https://press-tracking-api.sovendus.com/error';
@@ -226,25 +344,24 @@ class SovendusBanner extends StatefulWidget {
   static Future<void> reportError(
     String errorMessage,
     dynamic error, {
-    Function(String errorMessage, dynamic error)? onError,
-    String? source,
-    String? type,
+    required Function(String errorMessage, dynamic error)? onError,
+    required String type,
     int? trafficSourceNumber,
     int? trafficMediumNumber,
     Map<String, dynamic>? additionalData,
   }) async {
     try {
       errorCounter++;
+      if (errorCounter > 3) return;
 
       final errorData = {
-        'source': source ?? 'flutter-script',
-        'type': type ?? 'exception',
+        'source': 'flutter-script',
+        'type': type,
         'message': errorMessage,
         'counter': errorCounter,
         'trafficSource': trafficSourceNumber ?? "not_defined",
         'trafficMedium': trafficMediumNumber ?? "not_defined",
         'additionalData': jsonEncode({
-          'appName': 'flutter-script',
           'error': error.toString(),
           ...?additionalData,
         }),
@@ -308,6 +425,7 @@ class _SovendusBanner extends State<SovendusBanner> {
             'Unexpected console message received',
             'Level: ${consoleMessage.messageLevel}, Message: ${consoleMessage.message}',
             onError: widget.onError,
+            type: 'console-message-error',
             trafficSourceNumber: widget.trafficSourceNumber,
             trafficMediumNumber: widget.trafficMediumNumber,
           );
@@ -361,30 +479,30 @@ class _SovendusBanner extends State<SovendusBanner> {
 
   void handleJsMessage(dynamic message) {
     try {
-      if (message is Map<String, dynamic>) {
-        final type = message['type'];
-        final value = message['value'];
-
-        switch (type) {
-          case 'height':
-            updateHeight(value);
-            break;
-          case 'openUrl':
-            openUrlInNativeBrowser(value);
-            break;
-          default:
-            throw Exception(
-                'Unknown JS message type: $type - message: $message');
-        }
-      } else {
+      if (message is! Map<String, dynamic>) {
         throw Exception(
-            'Invalid JS message format: $message - type: ${message.runtimeType}');
+            'Invalid JS message format: expected Map<String, dynamic>, got ${message.runtimeType}');
+      }
+
+      final type = message['type'];
+      final value = message['value'];
+
+      switch (type) {
+        case 'height':
+          updateHeight(value);
+          break;
+        case 'openUrl':
+          openUrlInNativeBrowser(value);
+          break;
+        default:
+          throw Exception('Unknown JS message type: $type');
       }
     } catch (e) {
       SovendusBanner.reportError(
         'Error processing JS message',
         e,
         onError: widget.onError,
+        type: 'message-handling-error',
         trafficSourceNumber: widget.trafficSourceNumber,
         trafficMediumNumber: widget.trafficMediumNumber,
       );
@@ -394,19 +512,23 @@ class _SovendusBanner extends State<SovendusBanner> {
   Future<void> openUrlInNativeBrowser(dynamic urlValue) async {
     try {
       final urlString = urlValue?.toString() ?? '';
-      if (urlString.isNotEmpty) {
-        final url = Uri.parse(urlString);
-        if (await canLaunchUrl(url)) {
-          await launchUrl(url, mode: LaunchMode.inAppBrowserView);
-        } else {
-          throw Exception('Cannot launch URL: $urlString');
-        }
+
+      if (urlString.isEmpty) {
+        throw Exception('Empty URL provided for opening');
+      }
+
+      final url = Uri.parse(urlString);
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.inAppBrowserView);
+      } else {
+        throw Exception('Cannot launch URL: $urlString');
       }
     } catch (e) {
       SovendusBanner.reportError(
-        'Error opening URL',
+        'Error launching URL',
         e,
         onError: widget.onError,
+        type: 'url-launch-error',
         trafficSourceNumber: widget.trafficSourceNumber,
         trafficMediumNumber: widget.trafficMediumNumber,
       );
@@ -423,7 +545,12 @@ class _SovendusBanner extends State<SovendusBanner> {
         height = double.tryParse(heightValue);
       }
 
-      if (height != null && webViewHeight != height && height > 100) {
+      if (height == null) {
+        throw Exception(
+            'Could not parse height: $heightValue (${heightValue.runtimeType})');
+      }
+
+      if (webViewHeight != height && height > 100) {
         setState(() {
           webViewHeight = height!;
           doneLoading = true;
@@ -434,6 +561,7 @@ class _SovendusBanner extends State<SovendusBanner> {
         'Error updating height',
         e,
         onError: widget.onError,
+        type: 'height-update-error',
         trafficSourceNumber: widget.trafficSourceNumber,
         trafficMediumNumber: widget.trafficMediumNumber,
       );
@@ -442,12 +570,82 @@ class _SovendusBanner extends State<SovendusBanner> {
 }
 
 class HtmlSanitizer {
-  static String sanitize(String input) {
-    // jsonEncode returns a string with quotes around it (e.g. "value")
-    return jsonEncode(input).substring(1, jsonEncode(input).length - 1);
+  final int trafficSourceNumber;
+  final int trafficMediumNumber;
+  final Function(String errorMessage, dynamic error)? onError;
+
+  HtmlSanitizer({
+    required this.trafficSourceNumber,
+    required this.trafficMediumNumber,
+    this.onError,
+  });
+
+  String sanitize(String input) {
+    try {
+      // jsonEncode returns a string with quotes around it (e.g. "value")
+      return jsonEncode(input).substring(1, jsonEncode(input).length - 1);
+    } catch (e) {
+      SovendusBanner.reportError(
+        'Error sanitizing string input',
+        e,
+        onError: onError,
+        type: 'sanitization-error',
+        trafficSourceNumber: trafficSourceNumber,
+        trafficMediumNumber: trafficMediumNumber,
+      );
+      // Return empty string as fallback
+      return '';
+    }
   }
 
-  static String? sanitizeNullable(String? input) {
+  String? sanitizeNullable(String? input) {
     return input != null ? sanitize(input) : null;
+  }
+
+  String sanitizeInt(int input) {
+    try {
+      // Ensure the int is properly formatted and safe for HTML/JS injection
+      return input.toString();
+    } catch (e) {
+      SovendusBanner.reportError(
+        'Error sanitizing int input: $input',
+        e,
+        onError: onError,
+        type: 'sanitization-error',
+        trafficSourceNumber: trafficSourceNumber,
+        trafficMediumNumber: trafficMediumNumber,
+      );
+      // Return '0' as fallback
+      return '0';
+    }
+  }
+
+  String? sanitizeIntNullable(int? input) {
+    return input != null ? sanitizeInt(input) : null;
+  }
+
+  String sanitizeDouble(double input) {
+    try {
+      // Ensure the double is properly formatted and safe for HTML/JS injection
+      // Handle special cases like NaN, infinity
+      if (input.isNaN) return '0';
+      if (input.isInfinite) return '0';
+      return input.toString();
+    } catch (e) {
+      SovendusBanner.reportError(
+        'Error sanitizing double input: $input',
+        e,
+        onError: onError,
+        type: 'sanitization-error',
+        trafficSourceNumber: trafficSourceNumber,
+        trafficMediumNumber: trafficMediumNumber,
+      );
+      // Return '0' as fallback
+      return '0';
+    }
+  }
+
+  String? sanitizeDoubleNullable(double? input) {
+    return input != null ? sanitizeDouble(input) : null;
   }
 }
