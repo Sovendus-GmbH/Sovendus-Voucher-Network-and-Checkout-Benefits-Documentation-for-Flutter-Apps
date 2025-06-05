@@ -119,22 +119,30 @@ class SovendusBanner extends StatefulWidget {
               let intervalCheckDone = false;
               const checkInterval = setInterval(() => {
                 checkCount++;
-                console.log(document.body.scrollHeight, checkCount);
                 if (document.body.scrollHeight > 800 || checkCount >= maxChecks) {
                   clearInterval(checkInterval);
                   intervalCheckDone = true;
-                  console.log("height" + document.body.scrollHeight);
+                  window.flutter_inappwebview.callHandler('sovHandler', {
+                    type: 'height',
+                    value: document.body.scrollHeight
+                  });
                 }
               }, interval);
               new ResizeObserver(() => {
                 if (intervalCheckDone) {
-                  console.log("height" + document.body.scrollHeight);
+                  window.flutter_inappwebview.callHandler('sovHandler', {
+                    type: 'height',
+                    value: document.body.scrollHeight
+                  });
                 }
               }).observe(document.body);
           '''
               : '''
         new ResizeObserver(() => {
-          console.log("height" + document.body.scrollHeight);
+          window.flutter_inappwebview.callHandler('sovHandler', {
+            type: 'height',
+            value: document.body.scrollHeight
+          });
         }).observe(document.body);
       ''';
 
@@ -151,7 +159,10 @@ class SovendusBanner extends StatefulWidget {
                     window.sovApi = "v1";
                     window.addEventListener("message", (event) => {
                       if (event.data.channel === "sovendus:integration") {
-                        console.log("openUrl"+event.data.payload.url);
+                        window.flutter_inappwebview.callHandler('sovHandler', {
+                          type: 'openUrl',
+                          value: event.data.payload.url
+                        });
                       }
                     });
                     window.sovIframes = [];
@@ -283,8 +294,23 @@ class _SovendusBanner extends State<SovendusBanner> {
           useShouldOverrideUrlLoading: true,
           supportZoom: false,
         ),
+        onWebViewCreated: (controller) {
+          controller.addJavaScriptHandler(
+            handlerName: 'sovHandler',
+            callback: (args) {
+              handleJsMessage(args.first);
+            },
+          );
+        },
         onConsoleMessage: (controller, consoleMessage) {
-          processConsoleMessage(consoleMessage.message);
+          // Any console message indicates unexpected behavior and should be reported
+          SovendusBanner.reportError(
+            'Unexpected console message received',
+            'Level: ${consoleMessage.messageLevel}, Message: ${consoleMessage.message}',
+            onError: widget.onError,
+            trafficSourceNumber: widget.trafficSourceNumber,
+            trafficMediumNumber: widget.trafficMediumNumber,
+          );
         },
         shouldOverrideUrlLoading: (controller, navigationAction) async {
           if (navigationAction.request.url != null &&
@@ -333,24 +359,30 @@ class _SovendusBanner extends State<SovendusBanner> {
     return const SizedBox.shrink();
   }
 
-  Future<void> processConsoleMessage(String consoleMessage) async {
+  void handleJsMessage(dynamic message) {
     try {
-      if (consoleMessage.startsWith('height')) {
-        updateHeight(consoleMessage);
-      } else if (consoleMessage.startsWith('openUrl')) {
-        await openUrlInNativeBrowser(consoleMessage);
+      if (message is Map<String, dynamic>) {
+        final type = message['type'];
+        final value = message['value'];
+
+        switch (type) {
+          case 'height':
+            updateHeight(value);
+            break;
+          case 'openUrl':
+            openUrlInNativeBrowser(value);
+            break;
+          default:
+            throw Exception(
+                'Unknown JS message type: $type - message: $message');
+        }
       } else {
-        SovendusBanner.reportError(
-          'Unknown console message',
-          consoleMessage,
-          onError: widget.onError,
-          trafficSourceNumber: widget.trafficSourceNumber,
-          trafficMediumNumber: widget.trafficMediumNumber,
-        );
+        throw Exception(
+            'Invalid JS message format: $message - type: ${message.runtimeType}');
       }
     } catch (e) {
       SovendusBanner.reportError(
-        'Error processing console message',
+        'Error processing JS message',
         e,
         onError: widget.onError,
         trafficSourceNumber: widget.trafficSourceNumber,
@@ -359,21 +391,15 @@ class _SovendusBanner extends State<SovendusBanner> {
     }
   }
 
-  Future<void> openUrlInNativeBrowser(String consoleMessage) async {
+  Future<void> openUrlInNativeBrowser(dynamic urlValue) async {
     try {
-      final urlString = consoleMessage.replaceAll('openUrl', '');
+      final urlString = urlValue?.toString() ?? '';
       if (urlString.isNotEmpty) {
         final url = Uri.parse(urlString);
         if (await canLaunchUrl(url)) {
           await launchUrl(url, mode: LaunchMode.inAppBrowserView);
         } else {
-          SovendusBanner.reportError(
-            'Cannot launch URL',
-            urlString,
-            onError: widget.onError,
-            trafficSourceNumber: widget.trafficSourceNumber,
-            trafficMediumNumber: widget.trafficMediumNumber,
-          );
+          throw Exception('Cannot launch URL: $urlString');
         }
       }
     } catch (e) {
@@ -387,14 +413,19 @@ class _SovendusBanner extends State<SovendusBanner> {
     }
   }
 
-  void updateHeight(String consoleMessage) {
+  void updateHeight(dynamic heightValue) {
     try {
-      final heightString = consoleMessage.replaceAll('height', '');
-      final height = double.tryParse(heightString);
+      double? height;
+
+      if (heightValue is num) {
+        height = heightValue.toDouble();
+      } else if (heightValue is String) {
+        height = double.tryParse(heightValue);
+      }
 
       if (height != null && webViewHeight != height && height > 100) {
         setState(() {
-          webViewHeight = height;
+          webViewHeight = height!;
           doneLoading = true;
         });
       }
