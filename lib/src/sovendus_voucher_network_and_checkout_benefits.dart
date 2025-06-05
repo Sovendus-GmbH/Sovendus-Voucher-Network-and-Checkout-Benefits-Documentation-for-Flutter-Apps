@@ -77,7 +77,6 @@ class SovendusCustomerData {
   }
 }
 
-/// Order data class for Sovendus integration
 class SovendusOrderData {
   final String sessionId;
   final String orderId;
