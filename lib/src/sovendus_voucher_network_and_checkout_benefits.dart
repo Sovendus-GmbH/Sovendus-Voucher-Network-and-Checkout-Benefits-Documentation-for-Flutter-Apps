@@ -174,9 +174,10 @@ class SovendusBanner extends StatefulWidget {
         trafficMediumNumber: trafficMediumNumber,
         onError: onError,
       );
-
       final orderData = _createOrderData().sanitized(sanitizer);
-      final consumerJson = _createConsumerJson(orderData, sanitizer);
+      final customerData =
+          orderData.customerData ?? const SovendusCustomerData();
+      final consumerJson = _createConsumerJson(customerData, sanitizer);
       final resizeObserver = _createResizeObserver();
       final paddingString = "${orderData.padding}px";
 
@@ -213,10 +214,8 @@ class SovendusBanner extends StatefulWidget {
 
   /// consumer JSON with fallback
   String _createConsumerJson(
-      SovendusOrderData orderData, HtmlSanitizer sanitizer) {
+      SovendusCustomerData customerData, HtmlSanitizer sanitizer) {
     try {
-      final customerData =
-          orderData.customerData ?? const SovendusCustomerData();
       final consumerMap = {
         'consumerSalutation': customerData.salutation ?? "",
         'consumerFirstName': customerData.firstName ?? "",
