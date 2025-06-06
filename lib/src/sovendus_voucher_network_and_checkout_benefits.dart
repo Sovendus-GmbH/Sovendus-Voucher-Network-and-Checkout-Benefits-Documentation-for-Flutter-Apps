@@ -354,19 +354,19 @@ class SovendusBanner extends StatefulWidget {
       if (errorCounter > 3) return;
 
       final errorData = {
-        'source': 'flutter-script',
-        'type': type,
+        'source': 'flutter-$type',
+        'type': 'exception',
         'message': errorMessage,
         'counter': errorCounter,
         'trafficSource': trafficSourceNumber ?? "not_defined",
         'trafficMedium': trafficMediumNumber ?? "not_defined",
         'additionalData': jsonEncode({
           'error': error.toString(),
+          "appName": "flutter-script-$versionNumber",
           ...?additionalData,
         }),
         'implementationType': 'flutter-$versionNumber',
       };
-
       await http.post(
         Uri.parse(errorApi),
         headers: {
