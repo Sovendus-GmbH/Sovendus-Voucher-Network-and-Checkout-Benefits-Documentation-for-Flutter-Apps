@@ -1,6 +1,6 @@
 name: sovendus_voucher_network_and_checkout_benefits
 description: Official Sovendus Checkout Benefits & Voucher Network component for Flutter
-version: 1.2.10
+version: 1.3.0
 homepage: "https://sovendus.com"
 
 environment:
@@ -11,6 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_inappwebview: ">=5.8.0 <7.0.0"
+  http: ^1.4.0
   url_launcher: ^6.1.0
 
 dev_dependencies:
