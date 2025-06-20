@@ -10,7 +10,7 @@ A Flutter package that provides seamless integration with Sovendus Voucher Netwo
 
 ## 📦 Installation
 
-### 1. Add the Package
+### 📥 1. Add the Package
 
 Install the Sovendus Flutter component using the following command:
 
