@@ -179,7 +179,7 @@ The `SovendusCustomerData` class accepts the following optional parameters:
 
 ## 🤝 Contributing
 
-We welcome contributions! Please feel free to submit bug reports and pull requests.
+We welcome contributions! Please feel free to submit pull requests. If you have found any bugs please don't open a bug report, but instead get in touch with your Sovendus account manager.
 
 ### Development Setup
 
