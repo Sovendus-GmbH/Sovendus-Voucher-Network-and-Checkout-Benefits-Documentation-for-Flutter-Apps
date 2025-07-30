@@ -183,4 +183,4 @@ We welcome contributions! Please feel free to submit pull requests. If you have 
 
 ### Development Setup
 
-For contributors who want to work on this package, see our [Development Guide](README-dev.md)
+For contributors who want to work on this package, see our [Development Guide](https://github.com/Sovendus-GmbH/Sovendus-Voucher-Network-and-Checkout-Benefits-Documentation-for-Flutter-Apps/blob/main/README-dev.md)
