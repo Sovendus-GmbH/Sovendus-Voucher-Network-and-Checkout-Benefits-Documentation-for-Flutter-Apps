@@ -5,11 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-// import 'package:url_launcher/url_launcher.dart';
-// import 'package:material_3_demo/sovendus_static_banner.dart';
 import 'package:sovendus_voucher_network_and_checkout_benefits/sovendus_voucher_network_and_checkout_benefits.dart';
-
-// import 'package:material_3_demo/overlay_app.dart';
 
 const rowDivider = SizedBox(width: 20);
 const colDivider = SizedBox(height: 10);
@@ -39,26 +35,25 @@ class FirstComponentList extends StatelessWidget {
       SovendusBanner(
         trafficSourceNumber: 673,
         trafficMediumNumber: 40,
-        // orderUnixTime: 1699904232,
-        // sessionId: "kljadkaskdlaksdjaskd",
-        // orderId: "Order-123",
-        // netOrderValue: 120.5,
-        // currencyCode: "EUR",
+        sessionId: "kljadkaskdlaksdjaskd",
+        orderId: "Order-123",
+        netOrderValue: 120.5,
+        currencyCode: "EUR",
         backgroundColor: "#f5f3ef",
         padding: 15,
         // usedCouponCode: "CouponCodeFromThePurchase",
         customerData: SovendusCustomerData(
-          // salutation: "Mr.",
-          firstName: '" onclick="alert(1)"',
-          // lastName: "Smith",
-          // email: "example@example.com",
-          // phone: "+4915546456456",
-          // yearOfBirth: 1990,
-          // street: "Teststreet",
-          // streetNumber: "12/1",
-          // zipcode: "76135",
-          // city: "Karlsruhe",
-          // country: "DE",
+          salutation: "Mr.",
+          firstName: 'John',
+          lastName: "Smith",
+          email: "example@example.com",
+          phone: "+4915546456456",
+          yearOfBirth: 1990,
+          street: "Teststreet",
+          streetNumber: "12/1",
+          zipcode: "76135",
+          city: "Karlsruhe",
+          country: "DE",
         ),
         // Until the banner is loaded we're showing a loading indicator,
         // optionally you can pass a custom loading spinner with the type Widget

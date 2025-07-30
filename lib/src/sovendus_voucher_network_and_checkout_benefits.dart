@@ -85,7 +85,6 @@ class SovendusOrderData {
   final String backgroundColor;
   final int trafficSourceNumber;
   final int trafficMediumNumber;
-  final int orderUnixTime;
   final double netOrderValue;
   final double padding;
   final SovendusCustomerData? customerData;
@@ -98,7 +97,6 @@ class SovendusOrderData {
     required this.backgroundColor,
     required this.trafficSourceNumber,
     required this.trafficMediumNumber,
-    required this.orderUnixTime,
     required this.netOrderValue,
     required this.padding,
     this.customerData,
@@ -115,7 +113,6 @@ class SovendusOrderData {
           int.tryParse(sanitizer.sanitizeInt(trafficSourceNumber)) ?? 0,
       trafficMediumNumber:
           int.tryParse(sanitizer.sanitizeInt(trafficMediumNumber)) ?? 0,
-      orderUnixTime: int.tryParse(sanitizer.sanitizeInt(orderUnixTime)) ?? 0,
       netOrderValue:
           double.tryParse(sanitizer.sanitizeDouble(netOrderValue)) ?? 0.0,
       padding: double.tryParse(sanitizer.sanitizeDouble(padding)) ?? 0.0,
@@ -133,7 +130,6 @@ class SovendusBanner extends StatefulWidget {
     super.key,
     required this.trafficSourceNumber,
     required this.trafficMediumNumber,
-    this.orderUnixTime = 0,
     this.sessionId = "",
     this.orderId = "",
     this.netOrderValue = 0,
@@ -149,7 +145,6 @@ class SovendusBanner extends StatefulWidget {
 
   final int trafficSourceNumber;
   final int trafficMediumNumber;
-  final int orderUnixTime;
   final String sessionId;
   final String orderId;
   final double netOrderValue;
@@ -205,7 +200,6 @@ class SovendusBanner extends StatefulWidget {
       backgroundColor: backgroundColor,
       trafficSourceNumber: trafficSourceNumber,
       trafficMediumNumber: trafficMediumNumber,
-      orderUnixTime: orderUnixTime,
       netOrderValue: netOrderValue,
       padding: padding,
       customerData: customerData,
@@ -310,7 +304,6 @@ class SovendusBanner extends StatefulWidget {
                       trafficSourceNumber: "${orderData.trafficSourceNumber}",
                       trafficMediumNumber: "${orderData.trafficMediumNumber}",
                       iframeContainerId: "sovendus-voucher-banner",
-                      timestamp: "${orderData.orderUnixTime}",
                       sessionId: "${orderData.sessionId}",
                       orderId: "${orderData.orderId}",
                       orderValue: "${orderData.netOrderValue}",
@@ -333,10 +326,15 @@ class SovendusBanner extends StatefulWidget {
   static String errorApi = 'https://press-tracking-api.sovendus.com/error';
   static int errorCounter = 0;
 
-  static bool isNotBlacklistedUrl(Uri uri) {
-    return uri.path != '/banner/api/banner' &&
-        !uri.path.startsWith('/app-list') &&
-        uri.path != 'blank';
+  static bool isBlacklistedUrl(Uri uri) {
+    // This has to be improved, we need a more future proof solution
+    // Issue is that some link clicks and pop up closes will result in original content being replaced
+    // the issue is not related to flutter, happens on kotlin and swift as well
+    // A unified url pattern solution backend side might be the solution
+
+    return uri.path == '/banner/api/banner' ||
+        uri.path.startsWith('/app-list') ||
+        uri.path == 'blank';
   }
 
   static Future<void> reportError(
@@ -362,6 +360,7 @@ class SovendusBanner extends StatefulWidget {
         'additionalData': jsonEncode({
           'error': error.toString(),
           "appName": "flutter-script-$versionNumber",
+          "platform": Platform.operatingSystem,
           ...?additionalData,
         }),
         'implementationType': 'flutter-$versionNumber',
@@ -430,7 +429,7 @@ class _SovendusBanner extends State<SovendusBanner> {
         },
         shouldOverrideUrlLoading: (controller, navigationAction) async {
           if (navigationAction.request.url != null &&
-              SovendusBanner.isNotBlacklistedUrl(
+              !SovendusBanner.isBlacklistedUrl(
                 navigationAction.request.url!,
               )) {
             return NavigationActionPolicy.CANCEL;
