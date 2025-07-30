@@ -1,0 +1,213 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+class SovendusPolishBanner extends StatelessWidget {
+  /// Creates a Sovendus banner with customizable text, links, and styling
+  ///
+  /// The [onSelectPressed] callback is triggered when the user taps the banner or button
+  const SovendusPolishBanner({
+    super.key,
+    this.backgroundColor = const Color(0xFFF2F2F2),
+    this.textColor = Colors.black87,
+    this.buttonColor = const Color(0xFF1D5A9B),
+    this.buttonTextColor = Colors.white,
+    this.onSelectPressed,
+    this.sovendusUrl =
+        'https://sovendus.com/directlink/f20e2941-96c7-4c64-8974-86f2b75ab1b9',
+    this.privacyPolicyUrl =
+        'https://online.sovendus.com/pl/internetowa-ochrona-danych/#',
+    this.customProgressIndicator,
+    this.containerPadding = const EdgeInsets.all(24),
+    this.buttonPadding =
+        const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+    this.headlineText = 'Mamy dla Ciebie 1 małą niespodziankę!',
+    this.descriptionText =
+        'W ramach podziękowania za Twoje zamówienie możesz wybrać ekskluzywny kupon rabatowy do jednego z naszych sklepów partnerskich.',
+    this.buttonText = 'Wybierz',
+    this.privacyText1 = 'Informacja dotycząca ',
+    this.privacyText2 = 'przetwarzania danych',
+    this.privacyText3 = ' przez Sovendus',
+    this.headlineFontSize = 18.0,
+    this.descriptionFontSize = 14.0,
+    this.buttonFontSize = 16.0,
+    this.privacyFontSize = 12.0,
+    this.spaceBetweenIconAndText = 16.0,
+    this.spaceBetweenSections = 20.0,
+    this.spaceBeforeButton = 24.0,
+    this.iconWidth = 75.0,
+    this.iconHeight = 75.0,
+    this.iconAssetPath = 'assets/images/giftbox.png',
+    this.borderRadius = 12.0,
+    this.buttonBorderRadius = 6.0,
+    this.boxShadowBlurRadius = 4.0,
+    this.boxShadowOpacity = 26,
+    this.boxShadowOffset = const Offset(0, 2),
+  });
+
+  final Color backgroundColor;
+  final Color textColor;
+  final Color buttonColor;
+  final Color buttonTextColor;
+  final VoidCallback? onSelectPressed;
+  final String sovendusUrl;
+  final String privacyPolicyUrl;
+  final Widget? customProgressIndicator;
+
+  // Padding values
+  final EdgeInsetsGeometry containerPadding;
+  final EdgeInsetsGeometry buttonPadding;
+
+  // Text content
+  final String headlineText;
+  final String descriptionText;
+  final String buttonText;
+  final String privacyText1;
+  final String privacyText2;
+  final String privacyText3;
+
+  // Font sizes
+  final double headlineFontSize;
+  final double descriptionFontSize;
+  final double buttonFontSize;
+  final double privacyFontSize;
+
+  // Spacing
+  final double spaceBetweenIconAndText;
+  final double spaceBetweenSections;
+  final double spaceBeforeButton;
+
+  // Icon properties
+  final double iconWidth;
+  final double iconHeight;
+  final String iconAssetPath;
+
+  // Border and shadow properties
+  final double borderRadius;
+  final double buttonBorderRadius;
+  final double boxShadowBlurRadius;
+  final int boxShadowOpacity;
+  final Offset boxShadowOffset;
+
+  void _openSovendusWebView(BuildContext context) async {
+    final Uri uri = Uri.parse(sovendusUrl);
+    launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+  }
+
+  void _openPrivacyPolicy(BuildContext context) async {
+    final Uri uri = Uri.parse(privacyPolicyUrl);
+    launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onSelectPressed ?? () => _openSovendusWebView(context),
+      borderRadius: BorderRadius.circular(borderRadius),
+      child: Container(
+        padding: containerPadding,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(borderRadius),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(boxShadowOpacity),
+              blurRadius: boxShadowBlurRadius,
+              offset: boxShadowOffset,
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Center(
+                  child: SizedBox(
+                    width: iconWidth,
+                    height: iconHeight,
+                    child: Image.asset(iconAssetPath,
+                        errorBuilder: (context, error, stackTrace) =>
+                            customProgressIndicator ??
+                            const CircularProgressIndicator()),
+                  ),
+                ),
+                SizedBox(height: spaceBetweenIconAndText),
+                Center(
+                  child: Text(
+                    headlineText,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: headlineFontSize,
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: spaceBetweenSections),
+            Center(
+              child: Text(
+                descriptionText,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: descriptionFontSize,
+                  color: textColor,
+                ),
+              ),
+            ),
+            SizedBox(height: spaceBeforeButton),
+            Container(
+              width: double.infinity,
+              padding: buttonPadding,
+              decoration: BoxDecoration(
+                color: buttonColor,
+                borderRadius: BorderRadius.circular(buttonBorderRadius),
+              ),
+              child: Center(
+                child: Text(
+                  buttonText,
+                  style: TextStyle(
+                    fontSize: buttonFontSize,
+                    fontWeight: FontWeight.bold,
+                    color: buttonTextColor,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: spaceBetweenSections / 2),
+            Divider(
+              color: textColor.withAlpha(51),
+              thickness: 1,
+            ),
+            SizedBox(height: spaceBetweenSections / 2),
+            RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  fontSize: privacyFontSize,
+                  color: textColor.withAlpha(179),
+                  fontStyle: FontStyle.italic,
+                ),
+                children: [
+                  TextSpan(text: privacyText1),
+                  TextSpan(
+                    text: privacyText2,
+                    style: TextStyle(
+                      decoration: TextDecoration.underline,
+                      color: buttonColor,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () => _openPrivacyPolicy(context),
+                  ),
+                  TextSpan(text: privacyText3),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
