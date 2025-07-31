@@ -294,29 +294,6 @@ void main() {
       expect(SovendusBanner.initialWebViewHeight, 348.0);
     });
 
-    test('should validate blacklisted URLs correctly', () {
-      expect(
-        SovendusBanner.isBlacklistedUrl(Uri.parse('https://example.com/test')),
-        false,
-      );
-      expect(
-        SovendusBanner.isBlacklistedUrl(
-            Uri.parse('https://example.com/banner/api/banner')),
-        true,
-      );
-      expect(
-        SovendusBanner.isBlacklistedUrl(
-            Uri.parse('https://example.com/app-list/test')),
-        true,
-      );
-      expect(
-        SovendusBanner.isBlacklistedUrl(
-            Uri.parse('https://example.com/app-list')),
-        true,
-      );
-      expect(SovendusBanner.isBlacklistedUrl(Uri.parse('blank')), true);
-    });
-
     test('should check mobile platform correctly', () {
       // This test will vary based on the platform the test is running on
       final isMobile = SovendusBanner.isMobileCheck;

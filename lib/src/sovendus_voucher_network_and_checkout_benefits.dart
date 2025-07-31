@@ -326,17 +326,6 @@ class SovendusBanner extends StatefulWidget {
   static String errorApi = 'https://press-tracking-api.sovendus.com/error';
   static int errorCounter = 0;
 
-  static bool isBlacklistedUrl(Uri uri) {
-    // This has to be improved, we need a more future proof solution
-    // Issue is that some link clicks and pop up closes will result in original content being replaced
-    // the issue is not related to flutter, happens on kotlin and swift as well
-    // A unified url pattern solution backend side might be the solution
-
-    return uri.path == '/banner/api/banner' ||
-        uri.path.startsWith('/app-list') ||
-        uri.path == 'blank';
-  }
-
   static Future<void> reportError(
     String errorMessage,
     dynamic error, {
@@ -428,13 +417,7 @@ class _SovendusBanner extends State<SovendusBanner> {
           );
         },
         shouldOverrideUrlLoading: (controller, navigationAction) async {
-          if (navigationAction.request.url != null &&
-              !SovendusBanner.isBlacklistedUrl(
-                navigationAction.request.url!,
-              )) {
-            return NavigationActionPolicy.CANCEL;
-          }
-          return NavigationActionPolicy.ALLOW;
+          return NavigationActionPolicy.CANCEL;
         },
       );
     }
