@@ -1,0 +1,82 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "🎨 Material 3 Demo (Debug)",
+            "request": "launch",
+            "type": "dart",
+            "cwd": "${workspaceFolder}/dev",
+            "program": "lib/main.dart",
+            "args": [
+                "--dart-define=FLUTTER_WEB_USE_SKIA=true"
+                // use this if you run MacOS in a VM
+                // "--no-enable-impeller"
+            ],
+            "vmAdditionalArgs": [
+                "--disable-service-auth-codes"
+            ]
+        },
+        {
+            "name": "🚀 Material 3 Demo (Profile)",
+            "request": "launch",
+            "type": "dart",
+            "cwd": "${workspaceFolder}/dev",
+            "program": "lib/main.dart",
+            "flutterMode": "profile",
+            "args": [
+                "--dart-define=FLUTTER_WEB_USE_SKIA=true"
+                // use this if you run MacOS in a VM
+                // "--no-enable-impeller"
+            ]
+        },
+        {
+            "name": "📦 Material 3 Demo (Release)",
+            "request": "launch",
+            "type": "dart",
+            "cwd": "${workspaceFolder}/dev",
+            "program": "lib/main.dart",
+            "flutterMode": "release"
+            // use this if you run MacOS in a VM
+            // "--no-enable-impeller"
+        },
+        {
+            "name": "🌐 Material 3 Demo (Web - Chrome)",
+            "request": "launch",
+            "type": "dart",
+            "cwd": "${workspaceFolder}/dev",
+            "program": "lib/main.dart",
+            "deviceId": "chrome",
+            "args": [
+                "--web-renderer=canvaskit",
+                "--dart-define=FLUTTER_WEB_USE_SKIA=true"
+            ]
+        },
+        {
+            "name": "🧪 Material 3 Demo (Debug - No Impeller)",
+            "request": "launch",
+            "type": "dart",
+            "cwd": "${workspaceFolder}/dev",
+            "program": "lib/main.dart",
+            "args": [
+                "--no-enable-impeller",
+                "--dart-define=FLUTTER_WEB_USE_SKIA=true"
+            ],
+            "vmAdditionalArgs": [
+                "--disable-service-auth-codes"
+            ]
+        },
+        {
+            "name": "🔧 Integration Tests",
+            "request": "launch",
+            "type": "dart",
+            "cwd": "${workspaceFolder}/dev",
+            "program": "integration_test/integration_test.dart",
+            "args": [
+                "--dart-define=INTEGRATION_TEST=true"
+            ]
+        }
+    ]
+}
