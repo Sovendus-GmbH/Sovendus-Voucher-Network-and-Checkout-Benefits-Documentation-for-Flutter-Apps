@@ -1,4 +1,4 @@
-# 🚀 Sovendus Component for Flutter
+# Sovendus Component for Flutter
 
 A Flutter package that provides seamless integration with Sovendus Voucher Network and Checkout Benefits, enabling you to display personalized offers and vouchers to your customers after successful purchases.
 
