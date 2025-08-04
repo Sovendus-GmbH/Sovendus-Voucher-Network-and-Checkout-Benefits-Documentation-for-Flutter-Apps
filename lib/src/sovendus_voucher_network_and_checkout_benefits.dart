@@ -158,7 +158,7 @@ class SovendusBanner extends StatefulWidget {
   final Function(String errorMessage, dynamic error)? onError;
 
   // update with component version number
-  static const String versionNumber = "1.3.0";
+  static const String versionNumber = "1.3.1";
 
   String generateHtml() {
     if (!isMobileCheck) return '';

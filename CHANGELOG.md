@@ -97,3 +97,7 @@ add option to disable waiting for checkout benefits list
 ## 1.3.0
 
 Improve error handling and add input sanitization + remove timestamp parameter as its not needed
+
+## 1.3.1
+
+Simplify navigation handling
