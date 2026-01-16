@@ -80,6 +80,7 @@ class SovendusCustomerData {
 class SovendusOrderData {
   final String sessionId;
   final String orderId;
+  final bool hasConsent;
   final String currencyCode;
   final String usedCouponCode;
   final String backgroundColor;
@@ -93,6 +94,7 @@ class SovendusOrderData {
   const SovendusOrderData({
     required this.sessionId,
     required this.orderId,
+    required this.hasConsent,
     required this.currencyCode,
     required this.usedCouponCode,
     required this.backgroundColor,
@@ -108,6 +110,7 @@ class SovendusOrderData {
     return SovendusOrderData(
       sessionId: sanitizer.sanitize(sessionId),
       orderId: sanitizer.sanitize(orderId),
+      hasConsent: hasConsent,
       currencyCode: sanitizer.sanitize(currencyCode),
       usedCouponCode: sanitizer.sanitize(usedCouponCode),
       backgroundColor: sanitizer.sanitize(backgroundColor),
@@ -136,6 +139,7 @@ class SovendusBanner extends StatefulWidget {
     this.orderUnixTime = 0,
     this.sessionId = "",
     this.orderId = "",
+    required this.hasConsent,
     this.netOrderValue = 0,
     this.currencyCode = "",
     this.usedCouponCode = "",
@@ -152,6 +156,7 @@ class SovendusBanner extends StatefulWidget {
   final int orderUnixTime;
   final String sessionId;
   final String orderId;
+  final bool hasConsent;
   final double netOrderValue;
   final String currencyCode;
   final String usedCouponCode;
@@ -163,7 +168,7 @@ class SovendusBanner extends StatefulWidget {
   final Function(String errorMessage, dynamic error)? onError;
 
   // update with component version number
-  static const String versionNumber = "1.3.0";
+  static const String versionNumber = "1.4.0";
 
   String generateHtml() {
     if (!isMobileCheck) return '';
@@ -200,6 +205,7 @@ class SovendusBanner extends StatefulWidget {
     return SovendusOrderData(
       sessionId: sessionId,
       orderId: orderId,
+      hasConsent: hasConsent,
       currencyCode: currencyCode,
       usedCouponCode: usedCouponCode,
       backgroundColor: backgroundColor,
@@ -316,6 +322,7 @@ class SovendusBanner extends StatefulWidget {
                       orderValue: "${orderData.netOrderValue}",
                       orderCurrency: "${orderData.currencyCode}",
                       usedCouponCode: "${orderData.usedCouponCode}",
+                      hasConsent: "${orderData.hasConsent}",
                       integrationType: "flutter-$versionNumber",
                   });
                   window.sovConsumer = $consumerJson;

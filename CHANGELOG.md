@@ -97,3 +97,9 @@ add option to disable waiting for checkout benefits list
 ## 1.3.0
 
 Improve error handling and add input sanitization + remove timestamp parameter as its not needed
+
+## 1.4.0
+
+Add required hasConsent boolean parameter
+
+**BREAKING CHANGE:** All SovendusBanner instances must now include the `hasConsent` parameter.
