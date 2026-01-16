@@ -36,6 +36,7 @@ You can use the component like this:
        orderUnixTime: 1699904232,
        sessionId: "kljadkaskdlaksdjaskd",
        orderId: "Order-123",
+       hasConsent: true,
        netOrderValue: 120.5,
        currencyCode: "EUR",
        usedCouponCode: "CouponCodeFromThePurchase",
@@ -58,3 +59,11 @@ You can use the component like this:
        customProgressIndicator: RefreshProgressIndicator(),
    )
    ```
+
+### Important: Consent Parameter
+
+The `hasConsent` parameter is required and indicates whether the user has provided consent for data processing:
+
+- Set to `true` when the user has explicitly provided consent
+- Set to `false` when consent has not been obtained
+- This parameter is critical for GDPR and privacy compliance
