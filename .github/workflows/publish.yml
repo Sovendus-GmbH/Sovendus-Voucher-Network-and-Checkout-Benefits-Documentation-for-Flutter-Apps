@@ -1,0 +1,35 @@
+name: Publish to pub.dev
+
+# Publishing is triggered by pushing a version tag, e.g. `v1.4.0`.
+# The tag must match the `version:` in pubspec.yaml — pub.dev enforces this via the
+# `v{{version}}` tag pattern configured in the package's Automated Publishing settings.
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      # Required for OIDC. The pub client uses this short-lived token to authenticate
+      # with pub.dev — no API tokens or secrets are stored in GitHub.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Fail fast on packaging/validation problems before any upload happens.
+      - name: Validate package
+        run: dart pub publish --dry-run
+
+      # Non-interactive publish. OIDC credentials are detected automatically from the
+      # `id-token: write` permission above.
+      - name: Publish
+        run: dart pub publish --force
