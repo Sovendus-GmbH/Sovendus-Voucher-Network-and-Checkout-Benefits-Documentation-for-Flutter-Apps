@@ -12,8 +12,8 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      # Required for OIDC. The pub client uses this short-lived token to authenticate
-      # with pub.dev — no API tokens or secrets are stored in GitHub.
+      # Required to mint the OIDC token used to authenticate with pub.dev.
+      # No API tokens or secrets are stored in GitHub.
       id-token: write
     steps:
       - uses: actions/checkout@v5
@@ -25,11 +25,25 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      # subosito/flutter-action does NOT configure pub.dev OIDC (only dart-lang/setup-dart
+      # does). Without this, `dart pub publish` finds no credential and falls back to the
+      # interactive localhost OAuth flow, which cannot work on a CI runner. This step
+      # replicates what setup-dart's createPubOIDCToken() does: request a GitHub OIDC token
+      # with audience https://pub.dev, expose it as PUB_TOKEN, and tell pub to read it.
+      - name: Authenticate to pub.dev via OIDC
+        run: |
+          set -euo pipefail
+          PUB_TOKEN="$(curl -sSfL \
+            -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=https://pub.dev" | jq -r '.value')"
+          echo "::add-mask::${PUB_TOKEN}"
+          echo "PUB_TOKEN=${PUB_TOKEN}" >> "${GITHUB_ENV}"
+          dart pub token add https://pub.dev --env-var PUB_TOKEN
+
       # Fail fast on packaging/validation problems before any upload happens.
       - name: Validate package
         run: dart pub publish --dry-run
 
-      # Non-interactive publish. OIDC credentials are detected automatically from the
-      # `id-token: write` permission above.
+      # Non-interactive publish; authenticates with the PUB_TOKEN configured above.
       - name: Publish
         run: dart pub publish --force
