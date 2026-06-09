@@ -1,12 +1,19 @@
-// import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
-// import 'package:sovendus_banner/sovendus_banner.dart';
+import 'package:sovendus_voucher_network_and_checkout_benefits/sovendus_voucher_network_and_checkout_benefits.dart';
 
 void main() {
-  // test('adds one to input values', () {
-  //   final calculator = Calculator();
-  //   expect(calculator.addOne(2), 3);
-  //   expect(calculator.addOne(-7), -6);
-  //   expect(calculator.addOne(0), 1);
-  // });
+  test('SovendusBanner exposes the values it was constructed with', () {
+    const banner = SovendusBanner(
+      trafficSourceNumber: 1234,
+      trafficMediumNumber: 5678,
+      hasConsent: true,
+      customerData: SovendusCustomerData(firstName: 'John', lastName: 'Smith'),
+    );
+
+    expect(banner.trafficSourceNumber, 1234);
+    expect(banner.trafficMediumNumber, 5678);
+    expect(banner.hasConsent, isTrue);
+    expect(banner.customerData?.firstName, 'John');
+  });
 }
