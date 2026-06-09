@@ -132,7 +132,7 @@ class SovendusOrderData {
 }
 
 class SovendusBanner extends StatefulWidget {
-  SovendusBanner({
+  const SovendusBanner({
     super.key,
     required this.trafficSourceNumber,
     required this.trafficMediumNumber,
