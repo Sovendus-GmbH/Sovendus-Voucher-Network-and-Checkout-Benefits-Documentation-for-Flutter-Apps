@@ -15,7 +15,7 @@ jobs:
   analyze-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Installs the Flutter SDK (which bundles Dart) onto the runner.
       # This is the GitHub Actions equivalent of a GitLab "image:" with the tools baked in.
